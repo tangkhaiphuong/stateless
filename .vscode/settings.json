@@ -1,0 +1,15 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    "files.exclude": {
+        "node_modules/": true,
+        "**/._*": true,
+        "dist/": true,
+        "typings/": false,
+        "testing.csharp/": true
+    },
+    "typescript.tsdk": "./node_modules/typescript/lib",
+    "vsicons.presets.angular": false,
+    "editor.minimap.enabled": false,
+    "workbench.editor.enablePreview": true,
+    "workbench.editor.enablePreviewFromQuickOpen": false
+}

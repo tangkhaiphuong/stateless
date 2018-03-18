@@ -1,0 +1,51 @@
+{
+  "extends": "tslint:recommended",
+  "rules": {
+    "class-name": true,
+    "curly": true,
+    "eofline": true,
+    "indent": [true, "spaces"],
+    "max-line-length": [false],
+
+    "no-arg": true,
+    "no-construct": true,
+    "no-duplicate-variable": true,
+    "no-eval": true,
+    "no-unused-expression": true,
+    "one-line": [true,
+      "check-open-brace",
+      "check-catch",
+      "check-else",
+      "check-whitespace"
+    ],
+    "no-bitwise": false,
+    "object-literal-key-quotes": [
+      false
+    ],
+    "no-empty-interface": false,
+    "no-string-literal": false,
+    "no-var-requires": false,
+    "no-shadowed-variable": false,
+    "no-console": [false],
+    "space-before-function-paren": false,
+    "no-empty": false,
+    "whitespace": [false, "check-typecast"],
+    "no-namespace": false,
+    "object-literal-sort-keys": false,
+    "arrow-parens": false,
+    "no-trailing-whitespace": false,
+    "object-literal-shorthand": false,
+    "only-arrow-functions": [
+      false
+    ],
+    "quotemark": [true, "single"],
+    "semicolon": [true, "always"],
+    "trailing-comma": [true],
+    "triple-equals": true,
+    "variable-name": false,
+    "ordered-imports": [false],
+    "member-ordering": [false],
+    "prefer-for-of": false
+  },
+  "rulesDirectory": []
+}
