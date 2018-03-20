@@ -1,5 +1,6 @@
 import { StateConfiguration } from './state-configuration';
 import { StateRepresentation } from './state-pepresentation';
+import { StateMachineInfo } from './reflection/state-machine-info';
 /**
  * Models behaviour as transitions between a finite set of states.
  *
@@ -47,6 +48,15 @@ export declare class StateMachine<TState, TTrigger> {
      */
     readonly permittedTriggers: Promise<Iterable<TTrigger>>;
     readonly currentRepresentation: StateRepresentation<TState, TTrigger>;
+    /**
+     * Provides an info object which exposes the states, transitions, and actions of this machine.
+     *
+     * @param {string} stateType
+     * @param {string} triggerType
+     * @returns {StateMachineInfo}
+     * @memberof StateMachine
+     */
+    getInfo(stateType: string, triggerType: string): StateMachineInfo;
     private defaultUnhandledTriggerAction(state, trigger, unmetGuardConditions);
     private getRepresentation(state);
     /**
@@ -70,6 +80,24 @@ export declare class StateMachine<TState, TTrigger> {
      * @throws The current state does not allow the trigger to be fired.
      */
     fire(trigger: TTrigger, ...args: any[]): Promise<void>;
+    /**
+     * Activates current state. Actions associated with activating the currrent state
+     * will be invoked. The activation is idempotent and subsequent activation of the same current state
+     * will not lead to re-execution of activation callbacks.
+     *
+     * @returns {Promise<void>}
+     * @memberof StateMachine
+     */
+    activate(): Promise<void>;
+    /**
+     * Deactivates current state. Actions associated with deactivating the currrent state
+     * will be invoked. The deactivation is idempotent and subsequent deactivation of the same current state
+     * will not lead to re-execution of deactivation callbacks.
+     *
+     * @returns {Promise<void>}
+     * @memberof StateMachine
+     */
+    Deactivate(): Promise<void>;
     /**
      *  Queue events and then fire in order.
      * If only one event is queued, this behaves identically to the non-queued version.

@@ -2,7 +2,10 @@ import { UnhandledTriggerAction } from './unhandled-trigger-action';
 import { OnTransitionedEvent } from './on-transitioned-event';
 import { StateConfiguration } from './state-configuration';
 import { StateRepresentation } from './state-pepresentation';
+import { StateMachineInfo } from './reflection/state-machine-info';
 import { Transition } from './transition';
+import { StateInfo } from './reflection/state-info';
+import { TransitioningTriggerBehaviour } from './transitioning-trigger-behaviour';
 
 /**
  * Models behaviour as transitions between a finite set of states.
@@ -77,6 +80,57 @@ export class StateMachine<TState, TTrigger> {
     return this.getRepresentation(this.state);
   }
 
+  /**
+   * Provides an info object which exposes the states, transitions, and actions of this machine.
+   * 
+   * @param {string} stateType 
+   * @param {string} triggerType 
+   * @returns {StateMachineInfo} 
+   * @memberof StateMachine
+   */
+  public getInfo(stateType: string, triggerType: string): StateMachineInfo {
+    const representations = new Map<TState, StateRepresentation<TState, TTrigger>>(this._stateConfiguration);
+
+    const distinct: Set<TState> = new Set<TState>();
+    for (const kvp of this._stateConfiguration) {
+      for (const b of kvp['1'].triggerBehaviours) {
+        if (b instanceof TransitioningTriggerBehaviour) {
+          const destination = b.destination;
+          let flag = true;
+          for (const except of representations.keys()) {
+            if (except === destination) {
+              flag = false;
+            }
+          }
+          if (flag === false) {
+            continue;
+          }
+          distinct.add(destination);
+        }
+      }
+    }
+    const reachable: Array<StateRepresentation<TState, TTrigger>> = [];
+    for (const underlying of distinct) {
+      reachable.push(new StateRepresentation<TState, TTrigger>(underlying));
+    }
+
+    for (const representation of reachable) {
+      representations.set(representation.underlyingState, representation);
+    }
+
+    const info = new Map<TState, StateInfo>();
+    for (const item of representations) {
+      info.set(item['0'], StateInfo.createStateInfo<TState, TTrigger>(item['1']));
+    }
+    for (const state of info) {
+      const stateRepresentation = representations.get(state['0']);
+      if (!stateRepresentation) { continue; }
+      StateInfo.addRelationships(state['1'], stateRepresentation, (k: TState) => info.get(k));
+    }
+
+    return new StateMachineInfo(info.values(), stateType, triggerType);
+  }
+
   private defaultUnhandledTriggerAction(state: TState, trigger: TTrigger, unmetGuardConditions: string[]) {
     const source = state;
     this.getRepresentation(source);
@@ -122,6 +176,32 @@ export class StateMachine<TState, TTrigger> {
    */
   public async fire(trigger: TTrigger, ...args: any[]): Promise<void> {
     return this.internalFire(trigger, args);
+  }
+
+  /**
+   * Activates current state. Actions associated with activating the currrent state
+   * will be invoked. The activation is idempotent and subsequent activation of the same current state
+   * will not lead to re-execution of activation callbacks.
+   * 
+   * @returns {Promise<void>} 
+   * @memberof StateMachine
+   */
+  public async activate(): Promise<void> {
+    const representativeState = this.getRepresentation(this.state);
+    await representativeState.activate();
+  }
+
+  /**
+   * Deactivates current state. Actions associated with deactivating the currrent state
+   * will be invoked. The deactivation is idempotent and subsequent deactivation of the same current state
+   * will not lead to re-execution of deactivation callbacks.
+   * 
+   * @returns {Promise<void>} 
+   * @memberof StateMachine
+   */
+  public async Deactivate(): Promise<void> {
+    const representativeState = this.getRepresentation(this.state);
+    await representativeState.deactivate();
   }
 
   /**

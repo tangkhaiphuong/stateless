@@ -26,7 +26,7 @@ export declare class StateRepresentation<TState, TTrigger> {
     private _superstate;
     private readonly _substates;
     constructor(_state: TState);
-    private getSubstates();
+    getSubstates(): Array<StateRepresentation<TState, TTrigger>>;
     readonly triggerBehaviours: Map<TTrigger, Array<TriggerBehaviour<TState, TTrigger>>>;
     readonly entryActions: Array<EntryActionBehaviour<TState, TTrigger>>;
     readonly exitActions: Array<ExitActionBehaviour<TState, TTrigger>>;
@@ -38,6 +38,8 @@ export declare class StateRepresentation<TState, TTrigger> {
     superstate: StateRepresentation<TState, TTrigger> | null;
     addTriggerBehaviour(triggerBehaviour: TriggerBehaviour<TState, TTrigger>): void;
     addInternalAction(trigger: TTrigger, action: ((transition: Transition<TState, TTrigger>, args: any[]) => void)): void;
+    activate(): Promise<void>;
+    deactivate(): Promise<void>;
     tryFindHandler(trigger: TTrigger): Promise<[boolean, TriggerBehaviourResult<TState, TTrigger> | undefined]>;
     private tryFindLocalHandler(trigger);
     private tryFindLocalHandlerResult(trigger, results, filter);
