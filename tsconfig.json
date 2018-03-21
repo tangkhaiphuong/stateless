@@ -10,7 +10,7 @@
     // "checkJs": true,                       /* Report errors in .js files. */
     // "jsx": "preserve",                     /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */
     "declaration": true, /* Generates corresponding '.d.ts' file. */
-    "sourceMap": false, /* Generates corresponding '.map' file. */
+    "sourceMap": true, /* Generates corresponding '.map' file. */
     // "outFile": "./",                       /* Concatenate and emit output to single file. */
     "outDir": "./lib", /* Redirect output structure to the directory. */
     "rootDir": "./src", /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
@@ -28,8 +28,8 @@
     "noImplicitThis": true, /* Raise error on 'this' expressions with an implied 'any' type. */
     "alwaysStrict": true, /* Parse in strict mode and emit "use strict" for each source file. */
     /* Additional Checks */
-    //"noUnusedLocals": true, /* Report errors on unused locals. */
-    //"noUnusedParameters": true, /* Report errors on unused parameters. */
+    "noUnusedLocals": true, /* Report errors on unused locals. */
+    "noUnusedParameters": true, /* Report errors on unused parameters. */
     "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
     "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
     /* Module Resolution Options */

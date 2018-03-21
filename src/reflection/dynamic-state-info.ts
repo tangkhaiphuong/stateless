@@ -13,7 +13,9 @@ export class DynamicStateInfo {
    * @param {string} _criterion 
    * @memberof DynamicStateInfo
    */
-  constructor(private readonly _destinationState: string, private readonly _criterion: string) {
+  constructor(
+    private readonly _destinationState: string,
+    private readonly _criterion: string) {
   }
 
   /**
@@ -32,5 +34,5 @@ export class DynamicStateInfo {
    * @type {string}
    * @memberof DynamicStateInfo
    */
-  public get criterion(): string { return this.criterion; }
+  public get criterion(): string { return this._criterion; }
 }

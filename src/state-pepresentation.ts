@@ -39,7 +39,7 @@ export class StateRepresentation<TState, TTrigger> {
   constructor(private readonly _state: TState) {
   }
 
-  private getSubstates(): Array<StateRepresentation<TState, TTrigger>> {
+  public getSubstates(): Array<StateRepresentation<TState, TTrigger>> {
     return this._substates;
   }
 
@@ -93,6 +93,30 @@ export class StateRepresentation<TState, TTrigger> {
         action(t, args);
       }
     }));
+  }
+
+  public async activate(): Promise<void> {
+    if (!!this._superstate) {
+      this._superstate.activate();
+    }
+
+    if (this._active) { return; }
+
+    await this.executeActivationActions();
+    this._active = true;
+  }
+
+  public async deactivate(): Promise<void> {
+    if (!this._active) {
+      return;
+    }
+
+    await this.executeDeactivationActions();
+    this._active = false;
+
+    if (!!this._superstate) {
+      this._superstate.deactivate();
+    }
   }
 
   public async tryFindHandler(trigger: TTrigger)

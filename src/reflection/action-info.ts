@@ -22,7 +22,7 @@ export class ActionInfo {
    */
   constructor(
     private readonly _method: InvocationInfo,
-    private readonly _fromTrigger?: string) {
+    private readonly _fromTrigger: string | null = null) {
   }
 
   /**
@@ -41,5 +41,5 @@ export class ActionInfo {
    * @type {string}
    * @memberof ActionInfo
    */
-  public get fromTrigger(): string { return this._fromTrigger; }
+  public get fromTrigger(): string | null { return this._fromTrigger; }
 }
