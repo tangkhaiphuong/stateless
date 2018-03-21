@@ -12,7 +12,7 @@ import { InvocationInfo } from './reflection/invocation-info';
 export class DeactivateActionBehaviour<TState> {
   constructor(
     private readonly _state: TState,
-    private readonly _action: () => void | Promise<void>,
+    private readonly _action: () => any | Promise<any>,
     private readonly _description: InvocationInfo | null) { }
 
   public async execute(): Promise<void> {

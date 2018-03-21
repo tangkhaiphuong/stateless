@@ -173,19 +173,26 @@ export class StateRepresentation<TState, TTrigger> {
     return actual;
   }
 
-  public addActivateAction(action: () => void | Promise<void>, activateActionDescription: InvocationInfo | null = null) {
+  public addActivateAction(action: () => any | Promise<any>, activateActionDescription: InvocationInfo | null = null) {
     this._activateActions.push(new ActivateActionBehaviour(this._state, action, activateActionDescription));
   }
 
-  public addDeactivateAction(action: () => void | Promise<void>, deactivateActionDescription: InvocationInfo | null = null) {
+  public addDeactivateAction(
+    action: () => any | Promise<any>,
+    deactivateActionDescription: InvocationInfo | null = null) {
     this._deactivateActions.push(new DeactivateActionBehaviour(this._state, action, deactivateActionDescription));
   }
 
-  public addEntryAction(trigger: TTrigger | undefined, action: ((transition?: Transition<TState, TTrigger>, ...args: any[]) => void | Promise<void>), entryActionDescription: InvocationInfo) {
+  public addEntryAction(
+    trigger: TTrigger | undefined,
+    action: ((transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>),
+    entryActionDescription: InvocationInfo | null = null) {
     this._entryActions.push(new EntryActionBehaviour<TState, TTrigger>(action, entryActionDescription, trigger));
   }
 
-  public addExitAction(action: ((transition: Transition<TState, TTrigger>) => void | Promise<void>), exitActionDescription: InvocationInfo | null = null): any {
+  public addExitAction(
+    action: ((transition: Transition<TState, TTrigger>) => any | Promise<any>),
+    exitActionDescription: InvocationInfo | null = null): any {
     this._exitActions.push(new ExitActionBehaviour(action, exitActionDescription));
   }
 
@@ -221,8 +228,8 @@ export class StateRepresentation<TState, TTrigger> {
       if (!!this._superstate) {
         await this._superstate.enter(transition, entryArgs);
       }
-      this.executeEntryActions(transition, entryArgs);
-      this.executeActivationActions();
+      await this.executeEntryActions(transition, entryArgs);
+      await this.executeActivationActions();
     }
   }
 

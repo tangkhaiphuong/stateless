@@ -12,7 +12,7 @@ export declare class DeactivateActionBehaviour<TState> {
     private readonly _state;
     private readonly _action;
     private readonly _description;
-    constructor(_state: TState, _action: () => void | Promise<void>, _description: InvocationInfo | null);
+    constructor(_state: TState, _action: () => any | Promise<any>, _description: InvocationInfo | null);
     execute(): Promise<void>;
     readonly description: InvocationInfo | null;
     readonly state: TState;

@@ -10,6 +10,6 @@ import { Transition } from './transition';
  */
 export declare class InternalActionBehaviour<TState, TTrigger> {
     private readonly _action;
-    constructor(_action: ((transition: Transition<TState, TTrigger>, args: any[]) => void | Promise<void>));
+    constructor(_action: ((transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>));
     execute(transition: Transition<TState, TTrigger>, args: any[]): Promise<void>;
 }

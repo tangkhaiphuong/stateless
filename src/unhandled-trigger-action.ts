@@ -9,7 +9,7 @@
  */
 export class UnhandledTriggerAction<TState, TTrigger> {
 
-  constructor(private readonly _action: ((state: TState, trigger: TTrigger, unmetGuards: string[]) => void | Promise<void>)) { }
+  constructor(private readonly _action: ((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>)) { }
 
   public async execute(state: TState, trigger: TTrigger, unmetGuards: string[]): Promise<void> {
     const reuslt = this._action(state, trigger, unmetGuards);

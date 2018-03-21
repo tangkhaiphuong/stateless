@@ -14,11 +14,11 @@ export declare class ExitActionBehaviour<TState, TTrigger> {
     private readonly _description;
     /**
      * Creates an instance of ExitActionBehaviour.
-     * @param {(((transition: Transition<TState, TTrigger>) => void | Promise<void>))} _action
+     * @param {(((transition: Transition<TState, TTrigger>) => any | Promise<any>))} _action
      * @param {InvocationInfo} _description
      * @memberof ExitActionBehaviour
      */
-    constructor(_action: ((transition: Transition<TState, TTrigger>) => void | Promise<void>), _description: InvocationInfo | null);
+    constructor(_action: ((transition: Transition<TState, TTrigger>) => any | Promise<any>), _description: InvocationInfo | null);
     execute(transition: Transition<TState, TTrigger>): Promise<void>;
     readonly description: InvocationInfo | null;
 }

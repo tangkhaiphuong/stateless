@@ -9,6 +9,6 @@
  */
 export declare class UnhandledTriggerAction<TState, TTrigger> {
     private readonly _action;
-    constructor(_action: ((state: TState, trigger: TTrigger, unmetGuards: string[]) => void | Promise<void>));
+    constructor(_action: ((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>));
     execute(state: TState, trigger: TTrigger, unmetGuards: string[]): Promise<void>;
 }

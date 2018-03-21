@@ -18,10 +18,10 @@ export class TransitionGuard {
     return new TransitionGuard();
   }
 
-  constructor(...guards: Array<{ guard: (() => boolean | Promise<boolean>), description: string }>) {
+  constructor(...guards: Array<{ guard: (() => boolean | Promise<boolean>), description?: string | null }>) {
     for (const item of guards) {
       this._conditions.push(
-        new GuardCondition(item.guard, InvocationInfo.create(item.guard, item.description)));
+        new GuardCondition(item.guard, InvocationInfo.create(item.guard, item.description || null)));
     }
   }
 

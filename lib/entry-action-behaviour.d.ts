@@ -15,12 +15,12 @@ export declare class EntryActionBehaviour<TState, TTrigger> {
     private readonly _trigger;
     /**
      * Creates an instance of EntryActionBehaviour.
-     * @param {(((transition: Transition<TState, TTrigger>, args: any[]) => void | Promise<void>))} _action
+     * @param {(((transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>))} _action
      * @param {InvocationInfo} _desscription
      * @param {TTrigger} [_trigger]
      * @memberof EntryActionBehaviour
      */
-    constructor(_action: ((transition: Transition<TState, TTrigger>, args: any[]) => void | Promise<void>), _desscription: InvocationInfo, _trigger?: TTrigger | undefined);
+    constructor(_action: ((transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>), _desscription: InvocationInfo, _trigger?: TTrigger | undefined);
     execute(transition: Transition<TState, TTrigger>, args: any[]): Promise<void>;
     readonly trigger: TTrigger | undefined;
     readonly description: InvocationInfo;
