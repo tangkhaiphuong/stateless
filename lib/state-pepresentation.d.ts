@@ -43,10 +43,10 @@ export declare class StateRepresentation<TState, TTrigger> {
     tryFindHandler(trigger: TTrigger): Promise<[boolean, TriggerBehaviourResult<TState, TTrigger> | undefined]>;
     private tryFindLocalHandler(trigger);
     private tryFindLocalHandlerResult(trigger, results, filter);
-    addActivateAction(action: () => void | Promise<void>, activateActionDescription?: InvocationInfo | null): void;
-    addDeactivateAction(action: () => void | Promise<void>, deactivateActionDescription?: InvocationInfo | null): void;
-    addEntryAction(trigger: TTrigger | undefined, action: ((transition?: Transition<TState, TTrigger>, ...args: any[]) => void | Promise<void>), entryActionDescription: InvocationInfo): void;
-    addExitAction(action: ((transition: Transition<TState, TTrigger>) => void | Promise<void>), exitActionDescription?: InvocationInfo | null): any;
+    addActivateAction(action: () => any | Promise<any>, activateActionDescription?: InvocationInfo | null): void;
+    addDeactivateAction(action: () => any | Promise<any>, deactivateActionDescription?: InvocationInfo | null): void;
+    addEntryAction(trigger: TTrigger | undefined, action: ((transition?: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>), entryActionDescription: InvocationInfo): void;
+    addExitAction(action: ((transition: Transition<TState, TTrigger>) => any | Promise<any>), exitActionDescription?: InvocationInfo | null): any;
     internalAction(transition: Transition<TState, TTrigger>, args: any[]): Promise<void>;
     enter(transition: Transition<TState, TTrigger>, entryArgs: any[]): Promise<void>;
     exit(transition: Transition<TState, TTrigger>): Promise<Transition<TState, TTrigger>>;

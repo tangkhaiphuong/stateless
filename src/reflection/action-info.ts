@@ -21,7 +21,7 @@ export class ActionInfo {
    * @memberof ActionInfo
    */
   constructor(
-    private readonly _method: InvocationInfo,
+    private readonly _method: InvocationInfo | null,
     private readonly _fromTrigger: string | null = null) {
   }
 
@@ -32,7 +32,7 @@ export class ActionInfo {
    * @type {InvocationInfo}
    * @memberof ActionInfo
    */
-  public get method(): InvocationInfo { return this._method; }
+  public get method(): InvocationInfo | null { return this._method; }
 
   /**
    * If non-null, specifies the "from" trigger that must be present for this method to be invoked

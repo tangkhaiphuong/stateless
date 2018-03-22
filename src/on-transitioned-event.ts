@@ -5,7 +5,7 @@ import { Transition } from './transition';
  */
 export class OnTransitionedEvent<TState, TTrigger> {
 
-  private readonly _onTransitioned: Array<(transition: Transition<TState, TTrigger>) => void | Promise<void>> = [];
+  private readonly _onTransitioned: Array<(transition: Transition<TState, TTrigger>) => any | Promise<any>> = [];
 
   public async invoke(transition: Transition<TState, TTrigger>): Promise<void> {
     for (const item of this._onTransitioned) {
@@ -16,7 +16,7 @@ export class OnTransitionedEvent<TState, TTrigger> {
     }
   }
 
-  public register(action: (transition: Transition<TState, TTrigger>) => void | Promise<void>) {
+  public register(action: (transition: Transition<TState, TTrigger>) => any | Promise<any>) {
     this._onTransitioned.push(action);
   }
 }

@@ -5,5 +5,5 @@ import { Transition } from './transition';
 export declare class OnTransitionedEvent<TState, TTrigger> {
     private readonly _onTransitioned;
     invoke(transition: Transition<TState, TTrigger>): Promise<void>;
-    register(action: (transition: Transition<TState, TTrigger>) => void | Promise<void>): void;
+    register(action: (transition: Transition<TState, TTrigger>) => any | Promise<any>): void;
 }

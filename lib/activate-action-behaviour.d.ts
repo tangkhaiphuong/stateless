@@ -15,11 +15,11 @@ export declare class ActivateActionBehaviour<TState> {
     /**
      * Creates an instance of ActivateActionBehaviour.
      * @param {TState} _state
-     * @param {(() => void | Promise<void>)} _action
+     * @param {(() => any | Promise<any>)} _action
      * @param {InvocationInfo} _description
      * @memberof ActivateActionBehaviour
      */
-    constructor(_state: TState, _action: () => void | Promise<void>, _description: InvocationInfo | null);
+    constructor(_state: TState, _action: () => any | Promise<any>, _description: InvocationInfo | null);
     execute(): Promise<void>;
     readonly description: InvocationInfo | null;
     readonly state: TState;

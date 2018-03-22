@@ -109,36 +109,36 @@ export declare class StateConfiguration<TState, TTrigger> {
         guard: (() => boolean | Promise<boolean>);
         description: string;
     }>): StateConfiguration<TState, TTrigger>;
-    onActivate(activateAction: () => void | Promise<void>, activateActionDescription?: string | null): StateConfiguration<TState, TTrigger>;
-    onDeactivate(deactivateAction: () => void | Promise<void>, deactivateActionDescription?: string | null): StateConfiguration<TState, TTrigger>;
+    onActivate(activateAction: () => any | Promise<any>, activateActionDescription?: string | null): StateConfiguration<TState, TTrigger>;
+    onDeactivate(deactivateAction: () => any | Promise<any>, deactivateActionDescription?: string | null): StateConfiguration<TState, TTrigger>;
     /**
      * Specify an action that will execute when transitioning into the configured state.
      *
-     * @param {(((transition?: Transition<TState, TTrigger>) => void | Promise<void>))} entryAction Action to execute.
+     * @param {(((transition?: Transition<TState, TTrigger>) => any | Promise<any>))} entryAction Action to execute.
      * @param {InvocationInfo} [entryActionDescription] Action description.
      * @returns {StateConfiguration<TState, TTrigger>} The receiver.
      * @memberof StateConfiguration
      */
-    onEntry(entryAction: ((transition?: Transition<TState, TTrigger>) => void | Promise<void>), entryActionDescription: InvocationInfo): StateConfiguration<TState, TTrigger>;
+    onEntry(entryAction: ((transition?: Transition<TState, TTrigger>) => any | Promise<any>), entryActionDescription: InvocationInfo): StateConfiguration<TState, TTrigger>;
     /**
      * Specify an action that will execute when transitioning into the configured state.
      *
      * @param {TTrigger} trigger The trigger by which the state must be entered in order for the action to execute.
-     * @param {(((transition?: Transition<TState, TTrigger>, ...args: any[]) => void | Promise<void>))} entryAction Action to execute, providing details of the transition.
+     * @param {(((transition?: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>))} entryAction Action to execute, providing details of the transition.
      * @param {InvocationInfo} [entryActionDescription] Action description.
      * @returns {StateConfiguration<TState, TTrigger>} The receiver.
      * @memberof StateConfiguration
      */
-    onEntryFrom(trigger: TTrigger, entryAction: ((transition?: Transition<TState, TTrigger>, ...args: any[]) => void | Promise<void>), entryActionDescription: InvocationInfo): StateConfiguration<TState, TTrigger>;
+    onEntryFrom(trigger: TTrigger, entryAction: ((transition?: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>), entryActionDescription: InvocationInfo): StateConfiguration<TState, TTrigger>;
     /**
      * Specify an action that will execute when transitioning from the configured state.
      *
-     * @param {(((transition?: Transition<TState, TTrigger>) => void | Promise<void>))} exitAction Action to execute.
+     * @param {(((transition?: Transition<TState, TTrigger>) => any | Promise<any>))} exitAction Action to execute.
      * @param {string} [exitActionDescription] Action description.
      * @returns {StateConfiguration<TState, TTrigger>}
      * @memberof StateConfiguration
      */
-    onExit(exitAction: ((transition?: Transition<TState, TTrigger>) => void | Promise<void>), exitActionDescription?: string | null): StateConfiguration<TState, TTrigger>;
+    onExit(exitAction: ((transition?: Transition<TState, TTrigger>) => any | Promise<any>), exitActionDescription?: string | null): StateConfiguration<TState, TTrigger>;
     /**
      * Sets the superstate that the configured state is a substate of.
      * @description Substates inherit the allowed transitions of their superstate.

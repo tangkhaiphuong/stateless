@@ -14,14 +14,14 @@ export class EntryActionBehaviour<TState, TTrigger> {
 
   /**
    * Creates an instance of EntryActionBehaviour.
-   * @param {(((transition: Transition<TState, TTrigger>, args: any[]) => void | Promise<void>))} _action 
+   * @param {(((transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>))} _action 
    * @param {InvocationInfo} _desscription 
    * @param {TTrigger} [_trigger] 
    * @memberof EntryActionBehaviour
    */
   constructor(
-    private readonly _action: ((transition: Transition<TState, TTrigger>, args: any[]) => void | Promise<void>),
-    private readonly _desscription: InvocationInfo,
+    private readonly _action: ((transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>),
+    private readonly _desscription: InvocationInfo | null,
     private readonly _trigger?: TTrigger) { }
 
   public async execute(transition: Transition<TState, TTrigger>, args: any[]): Promise<void> {
@@ -36,5 +36,5 @@ export class EntryActionBehaviour<TState, TTrigger> {
 
   public get trigger(): TTrigger | undefined { return this._trigger; }
 
-  public get description(): InvocationInfo { return this._desscription; }
+  public get description(): InvocationInfo | null { return this._desscription; }
 }

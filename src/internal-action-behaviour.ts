@@ -11,7 +11,7 @@ import { Transition } from './transition';
  */
 export class InternalActionBehaviour<TState, TTrigger> {
 
-  constructor(private readonly _action: ((transition: Transition<TState, TTrigger>, args: any[]) => void | Promise<void>)) { }
+  constructor(private readonly _action: ((transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>)) { }
 
   public async execute(transition: Transition<TState, TTrigger>, args: any[]): Promise<void> {
     const reuslt = this._action(transition, args);
