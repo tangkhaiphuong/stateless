@@ -6,7 +6,7 @@ import { TransitionGuard } from './transition-guard';
  */
 export class InternalTriggerBehaviour<TState, TTrigger> extends TriggerBehaviour<TState, TTrigger>  {
 
-  constructor(trigger: TTrigger, guard: (() => boolean | Promise<boolean>)) {
+  constructor(trigger: TTrigger, guard: ((args: any[]) => boolean | Promise<boolean>)) {
     super(trigger, new TransitionGuard({ guard: guard, description: 'Internal Transition' }));
   }
 

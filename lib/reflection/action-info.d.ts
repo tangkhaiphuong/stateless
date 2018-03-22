@@ -17,7 +17,7 @@ export declare class ActionInfo {
      * @param {string} _fromTrigger
      * @memberof ActionInfo
      */
-    constructor(_method: InvocationInfo, _fromTrigger?: string | null);
+    constructor(_method: InvocationInfo | null, _fromTrigger?: string | null);
     /**
      * The method invoked during the action (entry or exit)
      *
@@ -25,7 +25,7 @@ export declare class ActionInfo {
      * @type {InvocationInfo}
      * @memberof ActionInfo
      */
-    readonly method: InvocationInfo;
+    readonly method: InvocationInfo | null;
     /**
      * If non-null, specifies the "from" trigger that must be present for this method to be invoked
      *

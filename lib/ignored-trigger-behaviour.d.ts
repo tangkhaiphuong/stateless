@@ -13,6 +13,6 @@ export declare class IgnoredTriggerBehaviour<TState, TTrigger> extends TriggerBe
      * @param {TState} _destination
      * @memberof IgnoredTriggerBehaviour
      */
-    constructor(trigger: TTrigger, guard: TransitionGuard, _destination: TState);
+    constructor(trigger: TTrigger, guard: TransitionGuard | undefined, _destination: TState);
     resultsInTransitionFrom(_source: TState, _args: any[]): Promise<[boolean, TState]>;
 }

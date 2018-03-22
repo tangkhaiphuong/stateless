@@ -1,6 +1,6 @@
 import { StateMachine } from '../../src';
 
-enum Trigger {
+const enum Trigger {
   Ok = 'Ok',
   Error = 'Error',
   Code301 = 'Code301',
@@ -12,7 +12,7 @@ enum Trigger {
   Code401 = 'Code401'
 }
 
-export enum State {
+export const enum State {
   Begin = 'Begin',
   NeedConnection = 'NeedConnection',
   NeedRequest = 'NeedRequest ',
@@ -26,7 +26,7 @@ export enum State {
 }
 
 /**
- * Http request simulation.
+ * Http request simulation base on W3c State machine: https://www.w3.org/Library/User/Architecture/HTTPFeatures.html
  * 
  * @export
  * @class HttpRequest
@@ -41,8 +41,6 @@ export class HttpRequest {
     mutator: s => this._state = s
   });
 
-  private _triggers: Array<{ trigger: Trigger, args?: any[] }> = [{ trigger: Trigger.Ok }];
-
   private _socketFd?: number;
   private _isConnected?: boolean;
   private _statusCode?: number;
@@ -55,8 +53,7 @@ export class HttpRequest {
       .permitIf(Trigger.Ok, State.NeedConnection, () => !this._isConnected)
       // Actions
       .onEntry(this.reset.bind(this))
-      // Move next triggers.
-      .onDeactivate(() => this._triggers.push({ trigger: Trigger.Ok }))
+      // Logging
       .onExit((t) => console.log(`1. ${t.source} --> ${t.destination}`));
 
     this._machine.configure(State.NeedConnection)
@@ -64,9 +61,7 @@ export class HttpRequest {
       .permitIf(Trigger.Error, State.Error, (): boolean => !this._socketFd)
       // Actions
       .onEntry(this.createSocket.bind(this)) // Creating socket file descriptor.
-      // Move next triggers.
-      .onDeactivate(() => this._triggers.push({ trigger: Trigger.Ok }))
-      .onDeactivate(() => this._triggers.push({ trigger: Trigger.Error }))// Move next.
+      // Logging
       .onExit((t) => console.log(`2. ${t.source} --> ${t.destination}`));
 
     this._machine.configure(State.NeedRequest)
@@ -74,9 +69,7 @@ export class HttpRequest {
       .permitIf(Trigger.Error, State.Error, (): boolean => !this._isConnected)
       // Actions
       .onEntry(this.connect.bind(this))// Connecting to server.
-      // Move next triggers.
-      .onDeactivate(() => this._triggers.push({ trigger: Trigger.Ok }))
-      .onDeactivate(() => this._triggers.push({ trigger: Trigger.Error }))
+      // Logging
       .onExit((t) => console.log(`3. ${t.source} --> ${t.destination}`));
 
     this._machine.configure(State.SendRequest)
@@ -90,15 +83,7 @@ export class HttpRequest {
       .permitIf(Trigger.Code203, State.NeedBody, (): boolean => this._statusCode === 203)
       // Actions
       .onEntry(this.sendRequest.bind(this)) // Sending request.
-      // Move next triggers
-      .onEntry(() => this._triggers.push({ trigger: Trigger.Code401 }))
-      .onEntry(() => this._triggers.push({ trigger: Trigger.Code301 }))
-      .onEntry(() => this._triggers.push({ trigger: Trigger.Code302 }))
-      .onEntry(() => this._triggers.push({ trigger: Trigger.Code204 }))
-      .onEntry(() => this._triggers.push({ trigger: Trigger.Code304 }))
-      .onEntry(() => this._triggers.push({ trigger: Trigger.Code200 }))
-      .onEntry(() => this._triggers.push({ trigger: Trigger.Code203 }))
-      .onEntry(() => this._triggers.push({ trigger: Trigger.Error }))
+      // Logging
       .onExit((t) => console.log(`4. ${t.source} --> ${t.destination}`));
 
     this._machine.configure(State.NeedBody)
@@ -106,19 +91,16 @@ export class HttpRequest {
       .permitIf(Trigger.Error, State.Error, () => !this._payload)
       // Actions
       .onEntry(this.processResponse.bind(this)) // Processing response.
-      // Move next triggers.
-      .onEntry(() => this._triggers.push({ trigger: Trigger.Ok }))
-      .onEntry(() => this._triggers.push({ trigger: Trigger.Error }))
+      // Logging
       .onExit((t) => console.log(`5. ${t.source} --> ${t.destination}`));
 
     this._machine.configure(State.NeedAccessAuth)
       .permitIf(Trigger.Ok, State.NeedConnection, () => !!this._authenication)
       .permitIf(Trigger.Error, State.Error, () => !this._authenication)
       // Actions
+      .onEntry(this.reset.bind(this))
       .onEntry(this.requestAuthentication.bind(this)) // Request authentication.
-      // Move next triggers.
-      .onEntry(() => this._triggers.push({ trigger: Trigger.Ok }))
-      .onEntry(() => this._triggers.push({ trigger: Trigger.Error }))
+      // Logging
       .onExit((t) => console.log(`6. ${t.source} --> ${t.destination}`));
   }
 
@@ -137,16 +119,16 @@ export class HttpRequest {
    * @memberof HttpRequest
    */
   public async send(): Promise<string> {
-    await this._machine.activate();
-    for (let item = this._triggers.shift();
-      !!item;
-      item = this._triggers.shift()) {
-      if (await this._machine.canFire(item.trigger)) {
-        console.log(`Fire: ${item.trigger}`);
-        await this._machine.fire(item.trigger, item.args);
+
+    do {
+      const triggers = await this._machine.permittedTriggers;
+      if (triggers.length === 0) { break; }
+      for (const item of triggers) {
+        await this._machine.fire(item);
       }
-    }
-    if (this.state === 'Error') {
+    } while (true);
+
+    if (this.state === State.Error) {
       throw new Error('Got error');
     } else {
       return this._payload!;
@@ -168,7 +150,6 @@ export class HttpRequest {
   }
 
   private createSocket(): Promise<void> {
-
     return new Promise<void>((resolve) => {
       setTimeout(() => {
         this._socketFd = Math.floor(Math.random() * 100);
@@ -182,7 +163,7 @@ export class HttpRequest {
     return new Promise<void>((resolve) => {
       setTimeout(() => {
         this._isConnected = true;
-        console.log(`${this.createSocket.name}: connected!!!`);
+        console.log(`${this.connect.name}: connected!!!`);
         resolve();
       }, 1000);
     });
@@ -191,8 +172,12 @@ export class HttpRequest {
   private sendRequest(): Promise<void> {
     return new Promise<void>((resolve) => {
       setTimeout(() => {
-        this._statusCode = 200;
-        console.log(`${this.createSocket.name}: status-code = ${this._statusCode}`);
+        if (!!this._authenication) {
+          this._statusCode = 200;
+        } else {
+          this._statusCode = 401;
+        }
+        console.log(`${this.sendRequest.name}: status-code = ${this._statusCode}`);
         resolve();
       }, 1000);
     });
@@ -202,7 +187,7 @@ export class HttpRequest {
     return new Promise<void>((resolve) => {
       setTimeout(() => {
         this._payload = 'Hello World';
-        console.log(`${this.createSocket.name}: payload = ${this._payload}`);
+        console.log(`${this.processResponse.name}: payload = ${this._payload}`);
         resolve();
       }, 1000);
     });
@@ -210,13 +195,11 @@ export class HttpRequest {
 
   private requestAuthentication(): Promise<void> {
     return new Promise<void>((resolve) => {
-      return new Promise<void>((resolve) => {
-        setTimeout(() => {
-          this._authenication = 'Authentication weRfW1HHJPcaH95kHB0Ylvk5uEwixWAJ';
-          console.log(`${this.createSocket.name}: authentication-token = ${this._authenication}`);
-          resolve();
-        }, 1000);
-      });
+      setTimeout(() => {
+        this._authenication = 'Authentication weRfW1HHJPcaH95kHB0Ylvk5uEwixWAJ';
+        console.log(`${this.requestAuthentication.name}: authentication-token = ${this._authenication}`);
+        resolve();
+      }, 1000);
     });
   }
 }

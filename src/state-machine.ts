@@ -21,7 +21,7 @@ export class StateMachine<TState, TTrigger> {
   private readonly _stateConfiguration: Map<TState, StateRepresentation<TState, TTrigger>> = new Map<TState, StateRepresentation<TState, TTrigger>>();
   private readonly _stateAccessor: () => TState;
   private readonly _stateMutator: (state: TState) => void;
-  private readonly _unhandledTriggerAction: UnhandledTriggerAction<TState, TTrigger>;
+  private _unhandledTriggerAction: UnhandledTriggerAction<TState, TTrigger>;
   private readonly _onTransitionedEvent: OnTransitionedEvent<TState, TTrigger>;
   private readonly _eventQueue: Array<{ trigger: TTrigger; args: any[]; }> = [];
 
@@ -69,13 +69,27 @@ export class StateMachine<TState, TTrigger> {
    * The currently-permissible trigger values.
    * 
    * @readonly
-   * @type {Promise<Iterable<TTrigger>>}
+   * @type {Promise<TTrigger[]>}
    * @memberof StateMachine
    */
-  public get permittedTriggers(): Promise<Iterable<TTrigger>> {
-    return this.currentRepresentation.permittedTriggers;
+  public get permittedTriggers(): Promise<TTrigger[]> {
+    return this.getPermittedTriggers();
   }
 
+  /// <summary>
+  /// The currently-permissible trigger values.
+  /// </summary>
+  public getPermittedTriggers(...args: any[]): Promise<TTrigger[]> {
+    return this.currentRepresentation.getPermittedTriggers(args);
+  }
+
+  /**
+   * Get current presentation.
+   * 
+   * @readonly
+   * @type {StateRepresentation<TState, TTrigger>}
+   * @memberof StateMachine
+   */
   public get currentRepresentation(): StateRepresentation<TState, TTrigger> {
     return this.getRepresentation(this.state);
   }
@@ -129,17 +143,6 @@ export class StateMachine<TState, TTrigger> {
     }
 
     return new StateMachineInfo(info.values(), stateType, triggerType);
-  }
-
-  private defaultUnhandledTriggerAction(state: TState, trigger: TTrigger, unmetGuardConditions: string[]) {
-    const source = state;
-    this.getRepresentation(source);
-
-    if (!unmetGuardConditions || unmetGuardConditions.length === 0) {
-      throw new Error(`Trigger '${trigger}' is valid for transition from state '${state}' but a guard conditions are not met. Guard descriptions: '${unmetGuardConditions}'.`);
-    }
-
-    throw new Error(`No valid leaving transitions are permitted from state '${trigger}' for trigger '${state}'. Consider ignoring the trigger.`);
   }
 
   private getRepresentation(state: TState): StateRepresentation<TState, TTrigger> {
@@ -199,7 +202,7 @@ export class StateMachine<TState, TTrigger> {
    * @returns {Promise<void>} 
    * @memberof StateMachine
    */
-  public async Deactivate(): Promise<void> {
+  public async deactivate(): Promise<void> {
     const representativeState = this.getRepresentation(this.state);
     await representativeState.deactivate();
   }
@@ -237,28 +240,6 @@ export class StateMachine<TState, TTrigger> {
     }
   }
 
-  /**
-   * Determine if the state machine is in the supplied state.
-   * 
-   * @param {TState} state 
-   * @returns {boolean} True if the current state is equal to, or a substate of, the supplied state.
-   * @memberof StateMachine
-   */
-  public isInState(state: TState): boolean {
-    return this.currentRepresentation.isIncludedIn(state);
-  }
-
-  /**
-   * Returns true if <paramref name="trigger"/> can be fired in the current state.
-   * 
-   * @param {TTrigger} trigger Trigger to test.
-   * @returns {boolean} True if the trigger can be fired, false otherwise.
-   * @memberof StateMachine
-   */
-  public canFire(trigger: TTrigger): Promise<boolean> {
-    return this.currentRepresentation.canHandle(trigger);
-  }
-
   private async internalFireOne(trigger: TTrigger, ...args: any[]): Promise<void> {
 
     const source = this.state;
@@ -292,6 +273,37 @@ export class StateMachine<TState, TTrigger> {
   }
 
   /**
+   * Override the default behaviour of throwing an exception when an unhandled trigger
+   * 
+   * @param {((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>)} unhandledTriggerAction >An action to call when an unhandled trigger is fired.
+   * @memberof StateMachine
+   */
+  public onUnhandledTrigger(unhandledTriggerAction: (state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>): void {
+    this._unhandledTriggerAction = new UnhandledTriggerAction<TState, TTrigger>(unhandledTriggerAction);
+  }
+
+  /**
+   * Determine if the state machine is in the supplied state.
+   * 
+   * @param {TState} state 
+   * @returns {boolean} True if the current state is equal to, or a substate of, the supplied state.
+   * @memberof StateMachine
+   */
+  public isInState(state: TState): boolean {
+    return this.currentRepresentation.isIncludedIn(state);
+  }
+
+  /**
+   * Returns true if <paramref name="trigger"/> can be fired in the current state.
+   * 
+   * @param {TTrigger} trigger Trigger to test.
+   * @returns {boolean} True if the trigger can be fired, false otherwise.
+   * @memberof StateMachine
+   */
+  public canFire(trigger: TTrigger): Promise<boolean> {
+    return this.currentRepresentation.canHandle(trigger);
+  }
+  /**
    * string
    * 
    * @returns {string} A description of the current state and permitted triggers.
@@ -299,5 +311,26 @@ export class StateMachine<TState, TTrigger> {
    */
   public async toString(): Promise<string> {
     return `StateMachine { state = ${this.state}, permittedTriggers = { ${[...await this.permittedTriggers].join(', ')} }}`;
+  }
+
+  private defaultUnhandledTriggerAction(state: TState, trigger: TTrigger, unmetGuardConditions: string[]) {
+    const source = state;
+    this.getRepresentation(source);
+
+    if (!unmetGuardConditions || unmetGuardConditions.length === 0) {
+      throw new Error(`Trigger '${trigger}' is valid for transition from state '${state}' but a guard conditions are not met. Guard descriptions: '${unmetGuardConditions}'.`);
+    }
+
+    throw new Error(`No valid leaving transitions are permitted from state '${trigger}' for trigger '${state}'. Consider ignoring the trigger.`);
+  }
+
+  /**
+   * Registers a callback that will be invoked every time the statemachine transitions from one state into another.
+   * 
+   * @param {(((transition: Transition<TState, TTrigger>) => any | Promise<any>))} onTransitionAction The action to execute, accepting the details
+   * @memberof StateMachine
+   */
+  public onTransitioned(onTransitionAction: ((transition: Transition<TState, TTrigger>) => any | Promise<any>)): void {
+    this._onTransitionedEvent.register(onTransitionAction);
   }
 }

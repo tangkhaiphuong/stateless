@@ -13,7 +13,7 @@ export class IgnoredTriggerBehaviour<TState, TTrigger> extends TriggerBehaviour<
    * @param {TState} _destination 
    * @memberof IgnoredTriggerBehaviour
    */
-  constructor(readonly trigger: TTrigger, guard: TransitionGuard, private readonly _destination: TState) {
+  constructor(readonly trigger: TTrigger, guard: TransitionGuard | undefined, private readonly _destination: TState) {
     super(trigger, guard);
   }
 

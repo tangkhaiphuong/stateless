@@ -21,6 +21,13 @@ import { DynamicStateInfos } from './reflection/dynamic-state-infos';
  */
 export class StateConfiguration<TState, TTrigger> {
 
+  /**
+   * Creates an instance of StateConfiguration.
+   * @param {StateMachine<TState, TTrigger>} _machine 
+   * @param {StateRepresentation<TState, TTrigger>} _representation 
+   * @param {(state: TState) => StateRepresentation<TState, TTrigger>} _lookup 
+   * @memberof StateConfiguration
+   */
   constructor(
     private readonly _machine: StateMachine<TState, TTrigger>,
     private readonly _representation: StateRepresentation<TState, TTrigger>,
@@ -60,6 +67,24 @@ export class StateConfiguration<TState, TTrigger> {
    * Add an internal transition to the state machine. An internal action does not cause the Exit and Entry actions to be triggered, and does not change the state of the state machine
    * 
    * @param {TTrigger} trigger 
+   * @param {((((...args: any[]) => boolean | Promise<boolean>)))} guard 
+   * @param {((transition: Transition<TState, TTrigger>) => void)} internalAction 
+   * @returns {StateConfiguration<TState, TTrigger>} 
+   * @memberof StateConfiguration
+   */
+  public internalTransitionIf(
+    trigger: TTrigger,
+    guard: (((...args: any[]) => boolean | Promise<boolean>)),
+    internalAction: ((transition: Transition<TState, TTrigger>, ...args: any[]) => void)): StateConfiguration<TState, TTrigger> {
+    this._representation.addTriggerBehaviour(new InternalTriggerBehaviour<TState, TTrigger>(trigger, guard));
+    this._representation.addInternalAction(trigger, (t, args) => internalAction(t, ...args));
+    return this;
+  }
+
+  /**
+   * Add an internal transition to the state machine. An internal action does not cause the Exit and Entry actions to be triggered, and does not change the state of the state machine
+   * 
+   * @param {TTrigger} trigger 
    * @param {((transition: Transition<TState, TTrigger>) => void)} entryAction 
    * @returns {StateConfiguration<TState, TTrigger>} 
    * @memberof StateConfiguration
@@ -71,29 +96,11 @@ export class StateConfiguration<TState, TTrigger> {
   }
 
   /**
-   * Add an internal transition to the state machine. An internal action does not cause the Exit and Entry actions to be triggered, and does not change the state of the state machine
-   * 
-   * @param {TTrigger} trigger 
-   * @param {(((() => boolean | Promise<boolean>)))} guard 
-   * @param {((transition: Transition<TState, TTrigger>) => void)} internalAction 
-   * @returns {StateConfiguration<TState, TTrigger>} 
-   * @memberof StateConfiguration
-   */
-  public internalTransitionIf(
-    trigger: TTrigger,
-    guard: ((() => boolean | Promise<boolean>)),
-    internalAction: ((transition: Transition<TState, TTrigger>, ...args: any[]) => void)): StateConfiguration<TState, TTrigger> {
-    this._representation.addTriggerBehaviour(new InternalTriggerBehaviour<TState, TTrigger>(trigger, guard));
-    this._representation.addInternalAction(trigger, (t, args) => internalAction(t, ...args));
-    return this;
-  }
-
-  /**
    * Accept the specified trigger and transition to the destination state.
    * 
    * @param {TTrigger} The accepted trigger.
    * @param {TState} destinationState The state that the trigger will cause a transition to.
-   * @param {(Array<{ guard: (() => boolean | Promise<boolean>), description?: string | null }> | (() => boolean | Promise<boolean>))} guards Functions and their descriptions that must return true in order for the trigger to be accepted.
+   * @param {(Array<{ guard: ((...args: any[]) => boolean | Promise<boolean>), description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>)> | ((...args: any[]) => boolean | Promise<boolean>))} guards Functions and their descriptions that must return true in order for the trigger to be accepted.
    * @param {(string | null)} [description=null] 
    * @returns {StateConfiguration<TState, TTrigger>} 
    * @memberof StateConfiguration
@@ -101,7 +108,7 @@ export class StateConfiguration<TState, TTrigger> {
   public permitIf(
     trigger: TTrigger,
     destinationState: TState,
-    guards: Array<{ guard: (() => boolean | Promise<boolean>), description?: string | null }> | (() => boolean | Promise<boolean>),
+    guards: Array<{ guard: ((...args: any[]) => boolean | Promise<boolean>), description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>)> | ((...args: any[]) => boolean | Promise<boolean>),
     description: string | null = null)
     : StateConfiguration<TState, TTrigger> {
     this.enforceNotIdentityTransition(destinationState);
@@ -137,14 +144,14 @@ export class StateConfiguration<TState, TTrigger> {
    * 
    * @description Applies to the current state only. Will not re-execute superstate actions, or cause actions to execute transitioning between super- and sub-states.
    * @param {TTrigger} trigger The accepted trigger.
-   * @param {(Array<{ guard: (() => boolean | Promise<boolean>), description?: string | null }> | (() => boolean | Promise<boolean>))} guards Functions and their descriptions that must return true in order for the trigger to be accepted.
+   * @param {(Array<{ guard: ((...args: any[]) => boolean | Promise<boolean>), description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>)> | ((...args: any[]) => boolean | Promise<boolean>))} guards Functions and their descriptions that must return true in order for the trigger to be accepted.
    * @param {(string | null)} [description=null] The reciever.
    * @returns {StateConfiguration<TState, TTrigger>} 
    * @memberof StateConfiguration
    */
   public permitReentryIf(
     trigger: TTrigger,
-    guards: Array<{ guard: (() => boolean | Promise<boolean>), description?: string | null }> | (() => boolean | Promise<boolean>),
+    guards: Array<{ guard: ((...args: any[]) => boolean | Promise<boolean>), description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>)> | ((...args: any[]) => boolean | Promise<boolean>),
     description: string | null = null)
     : StateConfiguration<TState, TTrigger> {
     if (guards instanceof Array) {
@@ -161,11 +168,23 @@ export class StateConfiguration<TState, TTrigger> {
   }
 
   /**
+   * Ignore the specified trigger when in the configured state.
+   * 
+   * @param {TTrigger} trigger 
+   * @returns {StateConfiguration<TState, TTrigger>} The trigger to ignore.
+   * @memberof StateConfigurationThe receiver.
+   */
+  public ignore(trigger: TTrigger): StateConfiguration<TState, TTrigger> {
+    this._representation.addTriggerBehaviour(new IgnoredTriggerBehaviour<TState, TTrigger>(trigger, undefined, this.state));
+    return this;
+  }
+
+  /**
    * Ignore the specified trigger when in the configured state, if the guard returns true.
    * 
    * @param {TTrigger} trigger The trigger to ignore.
    * @param {TState} state The state to ignore.
-   * @param {(Array<{ guard: (() => boolean | Promise<boolean>), description?: string | null }> | (() => boolean | Promise<boolean>))} guards Functions and their descriptions that must return true in order for the trigger to be ignored.
+   * @param {(Array<{ guard: ((...args: any[]) => boolean | Promise<boolean>), description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>)> | ((...args: any[]) => boolean | Promise<boolean>))} guards Functions and their descriptions that must return true in order for the trigger to be ignored.
    * @param {(string | null)} [description=null] The receiver.
    * @returns {StateConfiguration<TState, TTrigger>} 
    * @memberof StateConfiguration
@@ -173,7 +192,7 @@ export class StateConfiguration<TState, TTrigger> {
   public ignoreIf(
     trigger: TTrigger,
     state: TState,
-    guards: Array<{ guard: (() => boolean | Promise<boolean>), description?: string | null }> | (() => boolean | Promise<boolean>),
+    guards: Array<{ guard: ((...args: any[]) => boolean | Promise<boolean>), description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>)> | ((...args: any[]) => boolean | Promise<boolean>),
     description: string | null = null)
     : StateConfiguration<TState, TTrigger> {
 
@@ -193,13 +212,14 @@ export class StateConfiguration<TState, TTrigger> {
     return this;
   }
 
-  /// <summary>
-  /// Specify an action that will execute when activating
-  /// the configured state.
-  /// </summary>
-  /// <param name="activateAction">Action to execute.</param>
-  /// <param name="activateActionDescription">Action description.</param>
-  /// <returns>The receiver.</returns>
+  /**
+   * Specify an action that will execute when activating the configured state.
+   * 
+   * @param {(() => any | Promise<any>)} activateAction Action to execute.
+   * @param {(string | null)} [activateActionDescription=null] Action description.
+   * @returns {StateConfiguration<TState, TTrigger>} 
+   * @memberof StateConfiguration
+   */
   public onActivate(
     activateAction: () => any | Promise<any>,
     activateActionDescription: string | null = null): StateConfiguration<TState, TTrigger> {
@@ -344,7 +364,7 @@ export class StateConfiguration<TState, TTrigger> {
    * 
    * @param {TTrigger} trigger The accepted trigger.
    * @param {((args: any[]) => TState)} destinationStateSelector Function to calculate the state that the trigger will cause  transition to.
-   * @param {(Array<{ guard: (() => boolean | Promise<boolean>), description?: string | null }> | (() => boolean | Promise<boolean>))} guards Functions and their descriptions that must return true in order for the trigger to be accepted.
+   * @param {(Array<{ guard: ((...args: any[]) => boolean | Promise<boolean>), description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>)> | ((...args: any[]) => boolean | Promise<boolean>))} guards Functions and their descriptions that must return true in order for the trigger to be accepted.
    * @param {(string | null)} [description=null] 
    * @returns {StateConfiguration<TState, TTrigger>} The reciever.
    * @memberof StateConfiguration
@@ -352,7 +372,7 @@ export class StateConfiguration<TState, TTrigger> {
   public permitDynamicIf(
     trigger: TTrigger,
     destinationStateSelector: ((args: any[]) => TState),
-    guards: Array<{ guard: (() => boolean | Promise<boolean>), description?: string | null }> | (() => boolean | Promise<boolean>),
+    guards: Array<{ guard: ((...args: any[]) => boolean | Promise<boolean>), description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>)> | ((...args: any[]) => boolean | Promise<boolean>),
     description: string | null = null)
     : StateConfiguration<TState, TTrigger> {
 

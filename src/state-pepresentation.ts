@@ -63,8 +63,8 @@ export class StateRepresentation<TState, TTrigger> {
     return this._deactivateActions;
   }
 
-  public async canHandle(trigger: TTrigger): Promise<boolean> {
-    const [result] = await this.tryFindHandler(trigger);
+  public async canHandle(trigger: TTrigger, ...args: any[]): Promise<boolean> {
+    const [result] = await this.tryFindHandler(trigger, args);
     return result;
   }
 
@@ -97,7 +97,7 @@ export class StateRepresentation<TState, TTrigger> {
 
   public async activate(): Promise<void> {
     if (!!this._superstate) {
-      this._superstate.activate();
+      await this._superstate.activate();
     }
 
     if (this._active) { return; }
@@ -115,23 +115,23 @@ export class StateRepresentation<TState, TTrigger> {
     this._active = false;
 
     if (!!this._superstate) {
-      this._superstate.deactivate();
+      await this._superstate.deactivate();
     }
   }
 
-  public async tryFindHandler(trigger: TTrigger)
+  public async tryFindHandler(trigger: TTrigger, ...args: any[])
     : Promise<[boolean, TriggerBehaviourResult<TState, TTrigger> | undefined]> {
-    const [result, handler] = await this.tryFindLocalHandler(trigger);
+    const [result, handler] = await this.tryFindLocalHandler(trigger, args);
     if (result) { return [result, handler]; }
 
     if (this.superstate !== null) {
-      return await this.superstate.tryFindHandler(trigger);
+      return await this.superstate.tryFindHandler(trigger, args);
     }
 
     return [false, undefined];
   }
 
-  private async tryFindLocalHandler(trigger: TTrigger, )
+  private async tryFindLocalHandler(trigger: TTrigger, args: any[])
     : Promise<[boolean, TriggerBehaviourResult<TState, TTrigger> | undefined]> {
 
     const handler = this._triggerBehaviours.get(trigger);
@@ -141,7 +141,7 @@ export class StateRepresentation<TState, TTrigger> {
     // Guard functions executed
     const actual: Array<TriggerBehaviourResult<TState, TTrigger>> = [];
     for (const item of handler) {
-      const condition = await item.unmetGuardConditions;
+      const condition = await item.unmetGuardConditions(args);
       actual.push(new TriggerBehaviourResult(item, condition));
     }
 
@@ -202,7 +202,7 @@ export class StateRepresentation<TState, TTrigger> {
     // Look for actions in superstate(s) recursivly until we hit the topmost superstate, or we actually find some trigger handlers.
     let aStateRep: StateRepresentation<TState, TTrigger> | null = this;
     while (aStateRep !== null) {
-      const [result] = await aStateRep.tryFindLocalHandler(transition.trigger);
+      const [result] = await aStateRep.tryFindLocalHandler(transition.trigger, args);
       if (result) {
         // Trigger handler(s) found in this state
         for (const item of aStateRep._internalActions) {
@@ -287,13 +287,17 @@ export class StateRepresentation<TState, TTrigger> {
     return this._state === state || (!!this._superstate && this._superstate.isIncludedIn(state));
   }
 
-  public get permittedTriggers(): Promise<Iterable<TTrigger>> {
+  public get permittedTriggers(): Promise<TTrigger[]> {
+    return this.getPermittedTriggers();
+  }
+
+  public getPermittedTriggers(...args: any[]): Promise<TTrigger[]> {
     const implement = async () => {
       const result: TTrigger[] = [];
       for (const item of this._triggerBehaviours) {
         let flag = false;
         for (const subItem of item['1']) {
-          if ((await subItem.unmetGuardConditions).length === 0) {
+          if ((await subItem.unmetGuardConditions(args)).length === 0) {
             flag = true;
             break;
           }
@@ -304,7 +308,7 @@ export class StateRepresentation<TState, TTrigger> {
       }
 
       if (!!this.superstate) {
-        for (const item of await this.superstate.permittedTriggers) {
+        for (const item of await this.superstate.getPermittedTriggers(args)) {
           result.push(item);
         }
       }
@@ -313,5 +317,6 @@ export class StateRepresentation<TState, TTrigger> {
     };
     return implement();
   }
+
 
 }

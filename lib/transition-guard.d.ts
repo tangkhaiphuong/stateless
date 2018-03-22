@@ -12,9 +12,9 @@ export declare class TransitionGuard {
     private readonly _conditions;
     static readonly empty: TransitionGuard;
     constructor(...guards: Array<{
-        guard: (() => boolean | Promise<boolean>);
-        description: string;
-    }>);
+        guard: ((args: any[]) => boolean | Promise<boolean>);
+        description?: string | null;
+    } | ((args: any[]) => boolean | Promise<boolean>)>);
     readonly conditions: GuardCondition[];
     /**
      * guards is the list of the guard functions for all guard conditions for this transition
@@ -22,19 +22,19 @@ export declare class TransitionGuard {
      * @readonly
      * @memberof TransitionGuard
      */
-    readonly guards: Array<(() => boolean | Promise<boolean>) | null>;
+    readonly guards: Array<((args: any[]) => boolean | Promise<boolean>) | null>;
     /**
      * guardConditionsMet is true if all of the guard functions return true or if there are no guard functions
      *
      * @returns {Promise<boolean>}
      * @memberof TransitionGuard
      */
-    readonly guardConditionsMet: Promise<boolean>;
+    guardConditionsMet(args: any[]): Promise<boolean>;
     /**
      *  unmetGuardConditions is a list of the descriptions of all guard conditions whose guard function returns false
      *
      * @returns {(Promise<Array<string | null>>)}
      * @memberof TransitionGuard
      */
-    unmetGuardConditions(): Promise<string[]>;
+    unmetGuardConditions(args: any[]): Promise<string[]>;
 }

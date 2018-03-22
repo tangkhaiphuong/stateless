@@ -32,7 +32,7 @@ export declare class StateRepresentation<TState, TTrigger> {
     readonly exitActions: Array<ExitActionBehaviour<TState, TTrigger>>;
     readonly activateActions: Array<ActivateActionBehaviour<TState>>;
     readonly deactivateActions: Array<DeactivateActionBehaviour<TState>>;
-    canHandle(trigger: TTrigger): Promise<boolean>;
+    canHandle(trigger: TTrigger, ...args: any[]): Promise<boolean>;
     readonly underlyingState: TState;
     addSubstate(substate: StateRepresentation<TState, TTrigger>): void;
     superstate: StateRepresentation<TState, TTrigger> | null;
@@ -40,12 +40,12 @@ export declare class StateRepresentation<TState, TTrigger> {
     addInternalAction(trigger: TTrigger, action: ((transition: Transition<TState, TTrigger>, args: any[]) => void)): void;
     activate(): Promise<void>;
     deactivate(): Promise<void>;
-    tryFindHandler(trigger: TTrigger): Promise<[boolean, TriggerBehaviourResult<TState, TTrigger> | undefined]>;
-    private tryFindLocalHandler(trigger);
+    tryFindHandler(trigger: TTrigger, ...args: any[]): Promise<[boolean, TriggerBehaviourResult<TState, TTrigger> | undefined]>;
+    private tryFindLocalHandler(trigger, args);
     private tryFindLocalHandlerResult(trigger, results, filter);
     addActivateAction(action: () => any | Promise<any>, activateActionDescription?: InvocationInfo | null): void;
     addDeactivateAction(action: () => any | Promise<any>, deactivateActionDescription?: InvocationInfo | null): void;
-    addEntryAction(trigger: TTrigger | undefined, action: ((transition?: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>), entryActionDescription: InvocationInfo): void;
+    addEntryAction(trigger: TTrigger | undefined, action: ((transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>), entryActionDescription?: InvocationInfo | null): void;
     addExitAction(action: ((transition: Transition<TState, TTrigger>) => any | Promise<any>), exitActionDescription?: InvocationInfo | null): any;
     internalAction(transition: Transition<TState, TTrigger>, args: any[]): Promise<void>;
     enter(transition: Transition<TState, TTrigger>, entryArgs: any[]): Promise<void>;
@@ -56,5 +56,6 @@ export declare class StateRepresentation<TState, TTrigger> {
     private executeActivationActions();
     includes(state: TState): boolean;
     isIncludedIn(state: TState): boolean;
-    readonly permittedTriggers: Promise<Iterable<TTrigger>>;
+    readonly permittedTriggers: Promise<TTrigger[]>;
+    getPermittedTriggers(...args: any[]): Promise<TTrigger[]>;
 }

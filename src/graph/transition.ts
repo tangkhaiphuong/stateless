@@ -13,9 +13,13 @@ export class Transition {
 
   protected _executeEntryExitActions: boolean = true;
 
-  /// <summary>
-  /// The trigger that causes this transition
-  /// </summary>
+  /**
+   * The trigger that causes this transition
+   * 
+   * @readonly
+   * @type {TriggerInfo}
+   * @memberof Transition
+   */
   public get trigger(): TriggerInfo { return this._trigger; }
 
   /**

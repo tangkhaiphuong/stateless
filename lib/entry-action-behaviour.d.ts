@@ -20,8 +20,8 @@ export declare class EntryActionBehaviour<TState, TTrigger> {
      * @param {TTrigger} [_trigger]
      * @memberof EntryActionBehaviour
      */
-    constructor(_action: ((transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>), _desscription: InvocationInfo, _trigger?: TTrigger | undefined);
+    constructor(_action: ((transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>), _desscription: InvocationInfo | null, _trigger?: TTrigger | undefined);
     execute(transition: Transition<TState, TTrigger>, args: any[]): Promise<void>;
     readonly trigger: TTrigger | undefined;
-    readonly description: InvocationInfo;
+    readonly description: InvocationInfo | null;
 }

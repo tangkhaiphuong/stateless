@@ -34,7 +34,7 @@ export declare abstract class TriggerBehaviour<TState, TTrigger> {
      * @readonly
      * @memberof TriggerBehaviour
      */
-    readonly guards: Array<(() => boolean | Promise<boolean>) | null>;
+    readonly guards: Array<((args: any[]) => boolean | Promise<boolean>) | null>;
     /**
      * GuardConditionsMet is true if all of the guard functions return true or if there are no guard functions
      *
@@ -42,13 +42,13 @@ export declare abstract class TriggerBehaviour<TState, TTrigger> {
      * @type {boolean}
      * @memberof TriggerBehaviour
      */
-    readonly guardConditionsMet: Promise<boolean>;
+    guardConditionsMet(args: any[]): Promise<boolean>;
     /**
      * UnmetGuardConditions is a list of the descriptions of all guard conditionswhose guard function returns false
      *
      * @template string
      * @memberof TriggerBehaviour
      */
-    readonly unmetGuardConditions: Promise<string[]>;
+    unmetGuardConditions(args: any[]): Promise<string[]>;
     abstract resultsInTransitionFrom(source: TState, args: any[]): Promise<[boolean, TState]>;
 }

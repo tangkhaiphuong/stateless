@@ -41,7 +41,7 @@ export abstract class TriggerBehaviour<TState, TTrigger> {
    * @readonly
    * @memberof TriggerBehaviour
    */
-  public get guards(): Array<(() => boolean | Promise<boolean>) | null> {
+  public get guards(): Array<((args: any[]) => boolean | Promise<boolean>) | null> {
     return this._guard.guards;
   }
 
@@ -52,7 +52,7 @@ export abstract class TriggerBehaviour<TState, TTrigger> {
    * @type {boolean}
    * @memberof TriggerBehaviour
    */
-  public get guardConditionsMet(): Promise<boolean> { return this._guard.guardConditionsMet; }
+  public guardConditionsMet(args: any[]): Promise<boolean> { return this._guard.guardConditionsMet(args); }
 
   /**
    * UnmetGuardConditions is a list of the descriptions of all guard conditionswhose guard function returns false
@@ -60,7 +60,7 @@ export abstract class TriggerBehaviour<TState, TTrigger> {
    * @template string 
    * @memberof TriggerBehaviour
    */
-  public get unmetGuardConditions(): Promise<string[]> { return this._guard.unmetGuardConditions(); }
+  public unmetGuardConditions(args: any[]): Promise<string[]> { return this._guard.unmetGuardConditions(args); }
 
   public abstract resultsInTransitionFrom(source: TState, args: any[]): Promise<[boolean, TState]>;
 }

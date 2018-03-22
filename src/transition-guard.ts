@@ -18,10 +18,13 @@ export class TransitionGuard {
     return new TransitionGuard();
   }
 
-  constructor(...guards: Array<{ guard: (() => boolean | Promise<boolean>), description?: string | null }>) {
+  constructor(...guards: Array<{ guard: ((args: any[]) => boolean | Promise<boolean>), description?: string | null } | ((args: any[]) => boolean | Promise<boolean>)>) {
     for (const item of guards) {
-      this._conditions.push(
-        new GuardCondition(item.guard, InvocationInfo.create(item.guard, item.description || null)));
+      if (item instanceof Function) {
+        this._conditions.push(new GuardCondition(item, InvocationInfo.create(item, null)));
+      } else {
+        this._conditions.push(new GuardCondition(item.guard, InvocationInfo.create(item.guard, item.description || null)));
+      }
     }
   }
 
@@ -33,7 +36,7 @@ export class TransitionGuard {
    * @readonly
    * @memberof TransitionGuard
    */
-  public get guards(): Array<(() => boolean | Promise<boolean>) | null> {
+  public get guards(): Array<((args: any[]) => boolean | Promise<boolean>) | null> {
     return this._conditions.map(c => c.guard);
   }
 
@@ -43,11 +46,11 @@ export class TransitionGuard {
    * @returns {Promise<boolean>} 
    * @memberof TransitionGuard
    */
-  public get guardConditionsMet(): Promise<boolean> {
+  public guardConditionsMet(args: any[]): Promise<boolean> {
     const implement = async (): Promise<boolean> => {
       for (const item of this.conditions) {
         if (!item.guard) { return false; }
-        const result = item.guard();
+        const result = item.guard(args);
         if (result instanceof Promise) {
           const final = await result;
           if (final === false) {
@@ -68,13 +71,13 @@ export class TransitionGuard {
    * @returns {(Promise<Array<string | null>>)} 
    * @memberof TransitionGuard
    */
-  public async unmetGuardConditions(): Promise<string[]> {
+  public async unmetGuardConditions(args: any[]): Promise<string[]> {
     const implement = async (): Promise<string[]> => {
 
       const result: string[] = [];
       for (const item of this.conditions) {
         if (!item.guard) { continue; }
-        const guard = item.guard();
+        const guard = item.guard(args);
         if (guard instanceof Promise) {
           const final = await guard;
           if (final === false) {

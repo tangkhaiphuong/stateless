@@ -1,6 +1,7 @@
 import { StateConfiguration } from './state-configuration';
 import { StateRepresentation } from './state-pepresentation';
 import { StateMachineInfo } from './reflection/state-machine-info';
+import { Transition } from './transition';
 /**
  * Models behaviour as transitions between a finite set of states.
  *
@@ -14,7 +15,7 @@ export declare class StateMachine<TState, TTrigger> {
     private readonly _stateConfiguration;
     private readonly _stateAccessor;
     private readonly _stateMutator;
-    private readonly _unhandledTriggerAction;
+    private _unhandledTriggerAction;
     private readonly _onTransitionedEvent;
     private readonly _eventQueue;
     private _firing;
@@ -43,10 +44,18 @@ export declare class StateMachine<TState, TTrigger> {
      * The currently-permissible trigger values.
      *
      * @readonly
-     * @type {Promise<Iterable<TTrigger>>}
+     * @type {Promise<TTrigger[]>}
      * @memberof StateMachine
      */
-    readonly permittedTriggers: Promise<Iterable<TTrigger>>;
+    readonly permittedTriggers: Promise<TTrigger[]>;
+    getPermittedTriggers(...args: any[]): Promise<TTrigger[]>;
+    /**
+     * Get current presentation.
+     *
+     * @readonly
+     * @type {StateRepresentation<TState, TTrigger>}
+     * @memberof StateMachine
+     */
     readonly currentRepresentation: StateRepresentation<TState, TTrigger>;
     /**
      * Provides an info object which exposes the states, transitions, and actions of this machine.
@@ -57,7 +66,6 @@ export declare class StateMachine<TState, TTrigger> {
      * @memberof StateMachine
      */
     getInfo(stateType: string, triggerType: string): StateMachineInfo;
-    private defaultUnhandledTriggerAction(state, trigger, unmetGuardConditions);
     private getRepresentation(state);
     /**
      * Begin configuration of the entry/exit actions and allowed transitions
@@ -97,7 +105,7 @@ export declare class StateMachine<TState, TTrigger> {
      * @returns {Promise<void>}
      * @memberof StateMachine
      */
-    Deactivate(): Promise<void>;
+    deactivate(): Promise<void>;
     /**
      *  Queue events and then fire in order.
      * If only one event is queued, this behaves identically to the non-queued version.
@@ -109,6 +117,14 @@ export declare class StateMachine<TState, TTrigger> {
      * @memberof StateMachine
      */
     private internalFire(trigger, ...args);
+    private internalFireOne(trigger, ...args);
+    /**
+     * Override the default behaviour of throwing an exception when an unhandled trigger
+     *
+     * @param {((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>)} unhandledTriggerAction >An action to call when an unhandled trigger is fired.
+     * @memberof StateMachine
+     */
+    onUnhandledTrigger(unhandledTriggerAction: (state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>): void;
     /**
      * Determine if the state machine is in the supplied state.
      *
@@ -125,7 +141,6 @@ export declare class StateMachine<TState, TTrigger> {
      * @memberof StateMachine
      */
     canFire(trigger: TTrigger): Promise<boolean>;
-    private internalFireOne(trigger, ...args);
     /**
      * string
      *
@@ -133,4 +148,12 @@ export declare class StateMachine<TState, TTrigger> {
      * @memberof StateMachine
      */
     toString(): Promise<string>;
+    private defaultUnhandledTriggerAction(state, trigger, unmetGuardConditions);
+    /**
+     * Registers a callback that will be invoked every time the statemachine transitions from one state into another.
+     *
+     * @param {(((transition: Transition<TState, TTrigger>) => any | Promise<any>))} onTransitionAction The action to execute, accepting the details
+     * @memberof StateMachine
+     */
+    onTransitioned(onTransitionAction: ((transition: Transition<TState, TTrigger>) => any | Promise<any>)): void;
 }
