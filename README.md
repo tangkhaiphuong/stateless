@@ -78,7 +78,7 @@ In this example the state machine will use the `myState` object for state storag
 
 Another example can be found in the JsonExample solution, located in the example folder. 
 
-### Introspection (Not Implement)
+### Introspection
 
 The state machine can provide a list of the triggers than can be successfully fired within the current state via the `StateMachine.permittedTriggers` property.
 

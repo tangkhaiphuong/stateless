@@ -1,8 +1,6 @@
 import { TriggerInfo } from '../reflection/trigger-info';
 import { State } from './state';
-import { ActionInfo } from '../reflection/action-info';
 import { Transition } from './transition';
-import { InvocationInfo } from '../reflection/invocation-info';
 
 /**
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/Graph/Transition.cs#L65

@@ -32,7 +32,7 @@ export class GulpFile {
 
   @Task()
   public static compileSource(): NodeJS.ReadableStream {
-    return this.compileSourceBasePattern(['**/*.ts', '!gulpfile.ts']);
+    return this.compileSourceBasePattern(['**/**/*.ts', '!gulpfile.ts']);
   }
 
   @Task()

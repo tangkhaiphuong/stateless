@@ -47,7 +47,7 @@ export class Transition {
    * @type {State}
    * @memberof Transition
    */
-  public get sourceState(): State { return this.sourceState; }
+  public get sourceState(): State { return this._sourceState; }
 
   /**
    * Creates an instance of Transition.

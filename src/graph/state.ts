@@ -11,7 +11,7 @@ import { StateInfo } from '../reflection/state-info';
  */
 export class State {
 
-  private _stateName: string;
+  private _stateName: string | null;
   private _nodeName: string;
   private _superState: SuperState | null = null;
   private _leaving: Transition[] = [];
@@ -68,7 +68,7 @@ export class State {
    * @type {string}
    * @memberof State
    */
-  public get stateName(): string { return this._stateName; }
+  public get stateName(): string | null { return this._stateName; }
 
   /**
    * Actions that are executed when you enter this state from any trigger
@@ -101,12 +101,16 @@ export class State {
       // Only include entry actions that aren't specific to a trigger
       for (const entryAction of stateInfoOrNodeName.entryActions) {
         if (!entryAction.fromTrigger) {
-          this._entryActions.push(entryAction.method.description);
+          if (!!entryAction.method) {
+            this._entryActions.push(entryAction.method.description);
+          }
         }
       }
 
       for (const exitAction of stateInfoOrNodeName.exitActions) {
-        this._exitActions.push(exitAction.description);
+        if (!!exitAction) {
+          this._exitActions.push(exitAction.description);
+        }
       }
     } else {
       this._nodeName = stateInfoOrNodeName;
