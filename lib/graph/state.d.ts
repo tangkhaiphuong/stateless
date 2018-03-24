@@ -1,4 +1,4 @@
-import { Transition } from './transition';
+import { BaseTransition } from './base-transition';
 import { SuperState } from './super-state';
 import { StateInfo } from '../reflection/state-info';
 /**
@@ -32,18 +32,18 @@ export declare class State {
      * List of all transitions that leave this state (never null)
      *
      * @readonly
-     * @type {Transition[]}
+     * @type {BaseTransition[]}
      * @memberof State
      */
-    readonly leaving: Transition[];
+    readonly leaving: BaseTransition[];
     /**
      * List of all transitions that enter this state (never null)
      *
      * @readonly
-     * @type {Transition[]}
+     * @type {BaseTransition[]}
      * @memberof State
      */
-    readonly arriving: Transition[];
+    readonly arriving: BaseTransition[];
     /**
      * Unique name of this object
      *

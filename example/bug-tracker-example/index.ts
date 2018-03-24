@@ -7,8 +7,8 @@ import { Bug } from './bug';
   await bug.assign('Harry');
   await bug.assign('Fred');
   await bug.close();
-
+  console.log('----------------------------------');
+  console.log('DOT graph:');
   console.log();
-  console.log('State machine:');
   console.log(bug.toDotGraph());
 })();

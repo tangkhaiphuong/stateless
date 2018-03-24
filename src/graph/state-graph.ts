@@ -1,7 +1,7 @@
 import { StateMachineInfo } from '../reflection/state-machine-info';
 import { GraphStyle } from './graph-style';
 import { State } from './state';
-import { Transition } from './transition';
+import { BaseTransition } from './base-transition';
 import { Decision } from './decision';
 import { SuperState } from './super-state';
 import { StateInfo } from '../reflection/state-info';
@@ -19,7 +19,7 @@ import { DynamicTransition } from './dynamic-transition';
 export class StateGraph {
 
   private _state: Map<string, State> = new Map<string, State>();
-  private _transition: Transition[] = [];
+  private _transition: BaseTransition[] = [];
   private _decisions: Decision[] = [];
 
   /**
@@ -35,10 +35,10 @@ export class StateGraph {
    * List of all transitions in the graph
    * 
    * @readonly
-   * @type {Transition[]}
+   * @type {BaseTransition[]}
    * @memberof StateGraph
    */
-  public get transitions(): Transition[] { return this._transition; }
+  public get transitions(): BaseTransition[] { return this._transition; }
 
   /**
    * List of all decision nodes in the graph.  A decision node is generated each time there

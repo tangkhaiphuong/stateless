@@ -8,7 +8,7 @@ import { ActionInfo } from '../reflection/action-info';
  * @class Transition
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/Graph/Transition.cs
  */
-export declare class Transition {
+export declare abstract class BaseTransition {
     private _sourceState;
     private _trigger;
     protected _executeEntryExitActions: boolean;

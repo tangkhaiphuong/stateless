@@ -1,7 +1,7 @@
 import { StateMachineInfo } from '../reflection/state-machine-info';
 import { GraphStyle } from './graph-style';
 import { State } from './state';
-import { Transition } from './transition';
+import { BaseTransition } from './base-transition';
 import { Decision } from './decision';
 /**
  * This class is used to generate a symbolic representation of the
@@ -26,10 +26,10 @@ export declare class StateGraph {
      * List of all transitions in the graph
      *
      * @readonly
-     * @type {Transition[]}
+     * @type {BaseTransition[]}
      * @memberof StateGraph
      */
-    readonly transitions: Transition[];
+    readonly transitions: BaseTransition[];
     /**
      * List of all decision nodes in the graph.  A decision node is generated each time there
      * is a PermitDynamic() transition.

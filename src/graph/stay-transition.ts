@@ -1,12 +1,12 @@
 import { TriggerInfo } from '../reflection/trigger-info';
 import { State } from './state';
-import { Transition } from './transition';
+import { BaseTransition } from './base-transition';
 import { InvocationInfo } from '../reflection/invocation-info';
 
 /**
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/Graph/Transition.cs#L85
  */
-export class StayTransition extends Transition {
+export class StayTransition extends BaseTransition {
 
   public get guards(): Iterable<InvocationInfo> { return this._guards; }
 

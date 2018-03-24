@@ -1,11 +1,11 @@
 import { TriggerInfo } from '../reflection/trigger-info';
 import { State } from './state';
-import { Transition } from './transition';
+import { BaseTransition } from './base-transition';
 
 /**
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/Graph/Transition.cs#L65
  */
-export class DynamicTransition extends Transition {
+export class DynamicTransition extends BaseTransition {
 
   /**
    * The state where this transition finishes

@@ -1,4 +1,4 @@
-import { Transition } from './transition';
+import { BaseTransition } from './base-transition';
 import { SuperState } from './super-state';
 import { StateInfo } from '../reflection/state-info';
 
@@ -14,8 +14,8 @@ export class State {
   private _stateName: string | null;
   private _nodeName: string;
   private _superState: SuperState | null = null;
-  private _leaving: Transition[] = [];
-  private _arriving: Transition[] = [];
+  private _leaving: BaseTransition[] = [];
+  private _arriving: BaseTransition[] = [];
   private _entryActions: string[] = [];
   private _exitActions: string[] = [];
 
@@ -38,19 +38,19 @@ export class State {
    * List of all transitions that leave this state (never null)
    * 
    * @readonly
-   * @type {Transition[]}
+   * @type {BaseTransition[]}
    * @memberof State
    */
-  public get leaving(): Transition[] { return this._leaving; }
+  public get leaving(): BaseTransition[] { return this._leaving; }
 
   /**
    * List of all transitions that enter this state (never null)
    * 
    * @readonly
-   * @type {Transition[]}
+   * @type {BaseTransition[]}
    * @memberof State
    */
-  public get arriving(): Transition[] { return this._arriving; }
+  public get arriving(): BaseTransition[] { return this._arriving; }
 
   /**
    * Unique name of this object

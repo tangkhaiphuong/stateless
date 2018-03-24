@@ -1,6 +1,6 @@
 import { State } from './state';
 import { SuperState } from './super-state';
-import { Transition } from './transition';
+import { BaseTransition } from './base-transition';
 /**
  * Style definition for StateGraph.
  * Provides formatting of individual items in a state graph.
@@ -62,11 +62,11 @@ export declare abstract class GraphStyle {
      * This form, which can be overridden, determines the type of each transition and passes the appropriate
      * parameters to the virtual formatOneTransition() function.
      *
-     * @param {Iterable<Transition>} transitions List of all transitions in the state graph
+     * @param {Iterable<BaseTransition>} transitions List of all transitions in the state graph
      * @returns {Iterable<string>} Description of all transitions, in the desired format
      * @memberof GraphStyle
      */
-    formatAllTransitions(transitions: Iterable<Transition>): Iterable<string>;
+    formatAllTransitions(transitions: Iterable<BaseTransition>): Iterable<string>;
     /**
      * Returns the formatted text for a single transition.  Only required if the default version of
      * formatAllTransitions() is used.
