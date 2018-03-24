@@ -76,9 +76,13 @@ export class StateMachine<TState, TTrigger> {
     return this.getPermittedTriggers();
   }
 
-  /// <summary>
-  /// The currently-permissible trigger values.
-  /// </summary>
+  /**
+   * The currently-permissible trigger values.
+   * 
+   * @param {...any[]} args 
+   * @returns {Promise<TTrigger[]>} 
+   * @memberof StateMachine
+   */
   public getPermittedTriggers(...args: any[]): Promise<TTrigger[]> {
     return this.currentRepresentation.getPermittedTriggers(args);
   }
@@ -102,29 +106,28 @@ export class StateMachine<TState, TTrigger> {
    * @returns {StateMachineInfo} 
    * @memberof StateMachine
    */
-  public getInfo(stateType: string, triggerType: string): StateMachineInfo {
+  public getInfo(stateType: string = 'State', triggerType: string = 'Trigger'): StateMachineInfo {
+
     const representations = new Map<TState, StateRepresentation<TState, TTrigger>>(this._stateConfiguration);
 
-    const distinct: Set<TState> = new Set<TState>();
+    const except: Set<TState> = new Set<TState>(representations.keys());
+
+    const destinations: Set<TState> = new Set<TState>();
+
     for (const kvp of this._stateConfiguration) {
-      for (const b of kvp['1'].triggerBehaviours) {
-        if (b instanceof TransitioningTriggerBehaviour) {
-          const destination = b.destination;
-          let flag = true;
-          for (const except of representations.keys()) {
-            if (except === destination) {
-              flag = false;
-            }
+      for (const behaviours of kvp['1'].triggerBehaviours.values()) {
+        for (const item of behaviours) {
+          if (item instanceof TransitioningTriggerBehaviour) {
+            destinations.add(item.destination);
           }
-          if (flag === false) {
-            continue;
-          }
-          distinct.add(destination);
         }
       }
     }
     const reachable: Array<StateRepresentation<TState, TTrigger>> = [];
-    for (const underlying of distinct) {
+    for (const underlying of destinations) {
+      if (except.has(underlying)) {
+        continue;
+      }
       reachable.push(new StateRepresentation<TState, TTrigger>(underlying));
     }
 
@@ -134,15 +137,20 @@ export class StateMachine<TState, TTrigger> {
 
     const info = new Map<TState, StateInfo>();
     for (const item of representations) {
-      info.set(item['0'], StateInfo.createStateInfo<TState, TTrigger>(item['1']));
-    }
-    for (const state of info) {
-      const stateRepresentation = representations.get(state['0']);
-      if (!stateRepresentation) { continue; }
-      StateInfo.addRelationships(state['1'], stateRepresentation, (k: TState) => info.get(k));
+      info.set(item[0], StateInfo.createStateInfo<TState, TTrigger>(item[1]));
     }
 
-    return new StateMachineInfo(info.values(), stateType, triggerType);
+    for (const state of info) {
+      const stateRepresentation = representations.get(state[0]);
+      if (!stateRepresentation) { continue; }
+      StateInfo.addRelationships(state[1], stateRepresentation, (k: TState) => {
+        const result = info.get(k);
+        if (!result) { throw new Error('Cannot lookup state'); }
+        return result;
+      });
+    }
+
+    return new StateMachineInfo([...info.values()], stateType, triggerType);
   }
 
   private getRepresentation(state: TState): StateRepresentation<TState, TTrigger> {

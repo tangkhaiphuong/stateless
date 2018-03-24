@@ -48,6 +48,13 @@ export declare class StateMachine<TState, TTrigger> {
      * @memberof StateMachine
      */
     readonly permittedTriggers: Promise<TTrigger[]>;
+    /**
+     * The currently-permissible trigger values.
+     *
+     * @param {...any[]} args
+     * @returns {Promise<TTrigger[]>}
+     * @memberof StateMachine
+     */
     getPermittedTriggers(...args: any[]): Promise<TTrigger[]>;
     /**
      * Get current presentation.
@@ -65,7 +72,7 @@ export declare class StateMachine<TState, TTrigger> {
      * @returns {StateMachineInfo}
      * @memberof StateMachine
      */
-    getInfo(stateType: string, triggerType: string): StateMachineInfo;
+    getInfo(stateType?: string, triggerType?: string): StateMachineInfo;
     private getRepresentation(state);
     /**
      * Begin configuration of the entry/exit actions and allowed transitions

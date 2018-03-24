@@ -1,28 +1,29 @@
 import { StateMachine } from '../../src';
+import { UmlDotGraph } from '../../src/graph/uml-dot-graph';
 
 const enum Trigger {
-  Ok = 'Ok',
-  Error = 'Error',
-  Code301 = 'Code301',
-  Code302 = 'Code302',
-  Code204 = 'Code204',
-  Code304 = 'Code304',
-  Code200 = 'Code200',
-  Code203 = 'Code203',
-  Code401 = 'Code401'
+  Ok = 'OK',
+  Error = 'ERROR/FAULT',
+  Code301 = '301',
+  Code302 = '302',
+  Code204 = '204',
+  Code304 = '304',
+  Code200 = '200',
+  Code203 = '203',
+  Code401 = '401'
 }
 
 export const enum State {
-  Begin = 'Begin',
-  NeedConnection = 'NeedConnection',
-  NeedRequest = 'NeedRequest ',
-  SendRequest = 'SendRequest',
-  NeedAccessAuth = 'NeedAccessAuth',
-  NeedBody = 'NeedBody',
-  Error = 'Error',
-  Redirection = 'Redirection',
-  NoData = 'NoData',
-  GotData = 'GotData'
+  Begin = 'BEGIN',
+  NeedConnection = 'NEED CONNECTION',
+  NeedRequest = 'NEED REQUEST ',
+  SendRequest = 'SEND REQUEST',
+  NeedAccessAuth = 'NEED ACCESS AUTH',
+  NeedBody = 'NEED BODY',
+  Error = 'ERROR',
+  Redirection = 'REDIRECTION',
+  NoData = 'NO DATA',
+  GotData = 'GOT DATA'
 }
 
 /**
@@ -50,11 +51,13 @@ export class HttpRequest {
   constructor(private readonly _url: string) {
 
     this._machine.configure(State.Begin)
-      .permitIf(Trigger.Ok, State.NeedConnection, () => !this._isConnected)
+      .permitIf(Trigger.Ok, State.NeedConnection, [
+        { guard: () => !this._socketFd, description: 'Socket description must empty.' },
+        { guard: () => !this._isConnected, description: 'Not connect to remote.' }])
       // Actions
       .onEntry(this.reset.bind(this))
       // Logging
-      .onExit((t) => console.log(`1. ${t.source} --> ${t.destination}`));
+      .onExit((t) => console.log(`1. ${t.source} --> ${t.destination}`), 'logging');
 
     this._machine.configure(State.NeedConnection)
       .permitIf(Trigger.Ok, State.NeedRequest, (): boolean => !!this._socketFd)
@@ -62,7 +65,7 @@ export class HttpRequest {
       // Actions
       .onEntry(this.createSocket.bind(this)) // Creating socket file descriptor.
       // Logging
-      .onExit((t) => console.log(`2. ${t.source} --> ${t.destination}`));
+      .onExit((t) => console.log(`2. ${t.source} --> ${t.destination}`), 'logging');
 
     this._machine.configure(State.NeedRequest)
       .permitIf(Trigger.Ok, State.SendRequest, (): boolean => !!this._isConnected)
@@ -70,7 +73,7 @@ export class HttpRequest {
       // Actions
       .onEntry(this.connect.bind(this))// Connecting to server.
       // Logging
-      .onExit((t) => console.log(`3. ${t.source} --> ${t.destination}`));
+      .onExit((t) => console.log(`3. ${t.source} --> ${t.destination}`), 'logging');
 
     this._machine.configure(State.SendRequest)
       .permitIf(Trigger.Error, State.Error, (): boolean => !this._statusCode)
@@ -84,7 +87,7 @@ export class HttpRequest {
       // Actions
       .onEntry(this.sendRequest.bind(this)) // Sending request.
       // Logging
-      .onExit((t) => console.log(`4. ${t.source} --> ${t.destination}`));
+      .onExit((t) => console.log(`4. ${t.source} --> ${t.destination}`), 'logging');
 
     this._machine.configure(State.NeedBody)
       .permitIf(Trigger.Ok, State.GotData, () => !!this._payload)
@@ -92,7 +95,7 @@ export class HttpRequest {
       // Actions
       .onEntry(this.processResponse.bind(this)) // Processing response.
       // Logging
-      .onExit((t) => console.log(`5. ${t.source} --> ${t.destination}`));
+      .onExit((t) => console.log(`5. ${t.source} --> ${t.destination}`), 'logging');
 
     this._machine.configure(State.NeedAccessAuth)
       .permitIf(Trigger.Ok, State.NeedConnection, () => !!this._authenication)
@@ -101,7 +104,7 @@ export class HttpRequest {
       .onEntry(this.reset.bind(this))
       .onEntry(this.requestAuthentication.bind(this)) // Request authentication.
       // Logging
-      .onExit((t) => console.log(`6. ${t.source} --> ${t.destination}`));
+      .onExit((t) => console.log(`6. ${t.source} --> ${t.destination}`), 'logging');
   }
 
   /**
@@ -136,8 +139,7 @@ export class HttpRequest {
   }
 
   public toDotGraph(): string {
-    // return UmlDotGraph.Format(_machine.GetInfo());
-    return 'Method not implemented.';
+    return UmlDotGraph.format(this._machine.getInfo());
   }
 
   private reset(): void {

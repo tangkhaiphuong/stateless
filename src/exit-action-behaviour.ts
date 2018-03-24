@@ -20,7 +20,7 @@ export class ExitActionBehaviour<TState, TTrigger> {
    */
   constructor(
     private readonly _action: ((transition: Transition<TState, TTrigger>) => any | Promise<any>),
-    private readonly _description: InvocationInfo | null) { }
+    private readonly _description: InvocationInfo) { }
 
   public async execute(transition: Transition<TState, TTrigger>): Promise<void> {
     const reuslt = this._action(transition);
@@ -29,5 +29,5 @@ export class ExitActionBehaviour<TState, TTrigger> {
     }
   }
 
-  public get description(): InvocationInfo | null { return this._description; }
+  public get description(): InvocationInfo { return this._description; }
 }

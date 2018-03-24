@@ -10,7 +10,7 @@ export type Timing = 'Synchronous' | 'Asynchronous';
 export class InvocationInfo {
 
   public static create(method: ((...args: any[]) => any), description: string | null, timing: Timing = 'Synchronous'): InvocationInfo {
-    return new InvocationInfo(method.name, description, timing);
+    return new InvocationInfo(method.name || method.toString(), description, timing);
   }
 
   /**

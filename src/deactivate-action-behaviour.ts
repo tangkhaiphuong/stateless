@@ -13,7 +13,7 @@ export class DeactivateActionBehaviour<TState> {
   constructor(
     private readonly _state: TState,
     private readonly _action: () => any | Promise<any>,
-    private readonly _description: InvocationInfo | null) { }
+    private readonly _description: InvocationInfo) { }
 
   public async execute(): Promise<void> {
     const result = this._action();
@@ -22,7 +22,7 @@ export class DeactivateActionBehaviour<TState> {
     }
   }
 
-  public get description(): InvocationInfo | null { return this._description; }
+  public get description(): InvocationInfo { return this._description; }
 
   public get state(): TState { return this._state; }
 }

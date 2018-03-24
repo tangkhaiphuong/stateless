@@ -34,8 +34,8 @@ export declare class StateInfo {
      * @param {Iterable<InvocationInfo>} _exitActions
      * @memberof StateInfo
      */
-    constructor(_underlyingState: any, _ignoredTriggers: Iterable<IgnoredTransitionInfo>, _entryActions: Iterable<ActionInfo>, _activateActions: Iterable<InvocationInfo | null>, _deactivateActions: Iterable<InvocationInfo | null>, _exitActions: Iterable<InvocationInfo | null>);
-    static addRelationships<TState, TTrigger>(info: StateInfo, stateRepresentation: StateRepresentation<TState, TTrigger>, lookupState: (state: TState) => StateInfo | undefined): void;
+    constructor(_underlyingState: any, _ignoredTriggers: Iterable<IgnoredTransitionInfo>, _entryActions: Iterable<ActionInfo>, _activateActions: Iterable<InvocationInfo>, _deactivateActions: Iterable<InvocationInfo>, _exitActions: Iterable<InvocationInfo>);
+    static addRelationships<TState, TTrigger>(info: StateInfo, stateRepresentation: StateRepresentation<TState, TTrigger>, lookupState: (state: TState) => StateInfo): void;
     private addRelationships(superstate, substates, transitions, dynamicTransitions);
     /**
      * The instance or value this state represents.
@@ -52,7 +52,7 @@ export declare class StateInfo {
      * @type {(Iterable<StateInfo | null>)}
      * @memberof StateInfo
      */
-    readonly substates: Iterable<StateInfo | null>;
+    readonly substates: Iterable<StateInfo>;
     /**
      * Superstate defined, if any, for this StateResource.
      *
@@ -76,7 +76,7 @@ export declare class StateInfo {
      * @type {Iterable<InvocationInfo>}
      * @memberof StateInfo
      */
-    readonly activateActions: Iterable<InvocationInfo | null>;
+    readonly activateActions: Iterable<InvocationInfo>;
     /**
      * Actions that are defined to be executed on deactivation.
      *
@@ -84,7 +84,7 @@ export declare class StateInfo {
      * @type {Iterable<InvocationInfo>}
      * @memberof StateInfo
      */
-    readonly deactivateActions: Iterable<InvocationInfo | null>;
+    readonly deactivateActions: Iterable<InvocationInfo>;
     /**
      * Actions that are defined to be exectuted on state-exit.
      *
@@ -92,7 +92,7 @@ export declare class StateInfo {
      * @type {Iterable<InvocationInfo>}
      * @memberof StateInfo
      */
-    readonly exitActions: Iterable<InvocationInfo | null>;
+    readonly exitActions: Iterable<InvocationInfo>;
     /**
      * Transitions defined for this state.
      *

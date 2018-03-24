@@ -173,26 +173,26 @@ export class StateRepresentation<TState, TTrigger> {
     return actual;
   }
 
-  public addActivateAction(action: () => any | Promise<any>, activateActionDescription: InvocationInfo | null = null) {
+  public addActivateAction(action: () => any | Promise<any>, activateActionDescription: InvocationInfo) {
     this._activateActions.push(new ActivateActionBehaviour(this._state, action, activateActionDescription));
   }
 
   public addDeactivateAction(
     action: () => any | Promise<any>,
-    deactivateActionDescription: InvocationInfo | null = null) {
+    deactivateActionDescription: InvocationInfo) {
     this._deactivateActions.push(new DeactivateActionBehaviour(this._state, action, deactivateActionDescription));
   }
 
   public addEntryAction(
     trigger: TTrigger | undefined,
     action: ((transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>),
-    entryActionDescription: InvocationInfo | null = null) {
+    entryActionDescription: InvocationInfo) {
     this._entryActions.push(new EntryActionBehaviour<TState, TTrigger>(action, entryActionDescription, trigger));
   }
 
   public addExitAction(
     action: ((transition: Transition<TState, TTrigger>) => any | Promise<any>),
-    exitActionDescription: InvocationInfo | null = null): any {
+    exitActionDescription: InvocationInfo): any {
     this._exitActions.push(new ExitActionBehaviour(action, exitActionDescription));
   }
 
@@ -317,6 +317,4 @@ export class StateRepresentation<TState, TTrigger> {
     };
     return implement();
   }
-
-
 }

@@ -1,4 +1,5 @@
 import { StateMachine } from '../../src';
+import { UmlDotGraph } from '../../src/graph/uml-dot-graph';
 
 enum State { Open, Assigned, Deferred, Resolved, Closed }
 enum Trigger { Assign, Defer, Resolve, Close }
@@ -67,6 +68,6 @@ export class Bug {
   }
 
   public toDotGraph(): string {
-    return 'Method not implemented.';
+    return UmlDotGraph.format(this._machine.getInfo('State', 'Trigger'));
   }
 }

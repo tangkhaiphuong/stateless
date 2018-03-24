@@ -40,7 +40,7 @@ Some useful extensions are also provided:
  * Ability to store state externally (for example, in a property tracked)
  * Parameterised triggers
  * Reentrant states
- * Export to DOT graph <span style="color:red">(This feature will be released soon)</span>
+ * Export to DOT graph
 
 ### Hierarchical States
 
@@ -136,7 +136,7 @@ By default, triggers must be ignored explicitly. To override Stateless's default
 stateMachine.onUnhandledTrigger((state, trigger) => { });
 ```
 
-### Export to DOT graph <span style="color:red">(This feature will be released soon)</span>
+### Export to DOT graph
 
 It can be useful to visualize state machines on runtime. With this approach the code is the authoritative source and state diagrams are by-products which are always up to date.
  

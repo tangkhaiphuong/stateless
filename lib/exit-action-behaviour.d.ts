@@ -18,7 +18,7 @@ export declare class ExitActionBehaviour<TState, TTrigger> {
      * @param {InvocationInfo} _description
      * @memberof ExitActionBehaviour
      */
-    constructor(_action: ((transition: Transition<TState, TTrigger>) => any | Promise<any>), _description: InvocationInfo | null);
+    constructor(_action: ((transition: Transition<TState, TTrigger>) => any | Promise<any>), _description: InvocationInfo);
     execute(transition: Transition<TState, TTrigger>): Promise<void>;
-    readonly description: InvocationInfo | null;
+    readonly description: InvocationInfo;
 }

@@ -20,7 +20,7 @@ export class ActivateActionBehaviour<TState> {
    */
   constructor(
     private readonly _state: TState, private _action: () => any | Promise<any>,
-    private readonly _description: InvocationInfo | null) {
+    private readonly _description: InvocationInfo) {
 
   }
 
@@ -31,7 +31,7 @@ export class ActivateActionBehaviour<TState> {
     }
   }
 
-  public get description(): InvocationInfo | null { return this._description; }
+  public get description(): InvocationInfo { return this._description; }
 
   public get state(): TState { return this._state; }
 }

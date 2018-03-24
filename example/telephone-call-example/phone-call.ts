@@ -1,4 +1,5 @@
 import { StateMachine } from '../../src';
+import { UmlDotGraph } from '../../src/graph/uml-dot-graph';
 
 enum Trigger {
   CallDialed = 'CallDialed',
@@ -42,8 +43,8 @@ export class PhoneCall {
       .permit(Trigger.CallConnected, State.Connected);
 
     this._machine.configure(State.Connected)
-      .onEntry(t => this.startCallTimer())
-      .onExit(t => this.stopCallTimer())
+      .onEntry(this.startCallTimer.bind(this))
+      .onExit(this.stopCallTimer.bind(this))
       .internalTransition(Trigger.MuteMicrophone, t => this.onMute())
       .internalTransition(Trigger.UnmuteMicrophone, t => this.onUnmute())
       .internalTransition(Trigger.SetVolume, (t, volume) => this.onSetVolume(volume))
@@ -114,7 +115,6 @@ export class PhoneCall {
   }
 
   public toDotGraph(): string {
-    // return UmlDotGraph.Format(_machine.GetInfo());
-    return 'Method not implemented.';
+    return UmlDotGraph.format(this._machine.getInfo('State', 'Trigger'));
   }
 }

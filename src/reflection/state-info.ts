@@ -22,7 +22,7 @@ export class StateInfo {
   private _dynamicTransitions: Iterable<DynamicTransitionInfo> = [];
   private _fixedTransitions: Iterable<FixedTransitionInfo> = [];
   private _superstate: StateInfo | null = null;
-  private _substates: Iterable<StateInfo | null> = [];
+  private _substates: Iterable<StateInfo> = [];
 
   public static createStateInfo<TState, TTrigger>(stateRepresentation: StateRepresentation<TState, TTrigger>): StateInfo {
 
@@ -60,15 +60,15 @@ export class StateInfo {
     private readonly _underlyingState: any,
     private readonly _ignoredTriggers: Iterable<IgnoredTransitionInfo>,
     private readonly _entryActions: Iterable<ActionInfo>,
-    private readonly _activateActions: Iterable<InvocationInfo | null>,
-    private readonly _deactivateActions: Iterable<InvocationInfo | null>,
-    private readonly _exitActions: Iterable<InvocationInfo | null>) {
+    private readonly _activateActions: Iterable<InvocationInfo>,
+    private readonly _deactivateActions: Iterable<InvocationInfo>,
+    private readonly _exitActions: Iterable<InvocationInfo>) {
   }
 
   public static addRelationships<TState, TTrigger>(
     info: StateInfo,
     stateRepresentation: StateRepresentation<TState, TTrigger>,
-    lookupState: (state: TState) => StateInfo | undefined) {
+    lookupState: (state: TState) => StateInfo) {
 
     const substates = stateRepresentation.getSubstates().map(s => lookupState(s.underlyingState) || null);
 
@@ -104,7 +104,7 @@ export class StateInfo {
 
   private addRelationships(
     superstate: StateInfo | null,
-    substates: Iterable<StateInfo | null>,
+    substates: Iterable<StateInfo>,
     transitions: Iterable<FixedTransitionInfo>,
     dynamicTransitions: Iterable<DynamicTransitionInfo>) {
     this._superstate = superstate;
@@ -129,7 +129,7 @@ export class StateInfo {
    * @type {(Iterable<StateInfo | null>)}
    * @memberof StateInfo
    */
-  public get substates(): Iterable<StateInfo | null> { return this._substates; }
+  public get substates(): Iterable<StateInfo> { return this._substates; }
 
   /**
    * Superstate defined, if any, for this StateResource.
@@ -156,7 +156,7 @@ export class StateInfo {
    * @type {Iterable<InvocationInfo>}
    * @memberof StateInfo
    */
-  public get activateActions(): Iterable<InvocationInfo | null> { return this._activateActions; }
+  public get activateActions(): Iterable<InvocationInfo> { return this._activateActions; }
 
   /**
    * Actions that are defined to be executed on deactivation.
@@ -165,7 +165,7 @@ export class StateInfo {
    * @type {Iterable<InvocationInfo>}
    * @memberof StateInfo
    */
-  public get deactivateActions(): Iterable<InvocationInfo | null> { return this._deactivateActions; }
+  public get deactivateActions(): Iterable<InvocationInfo> { return this._deactivateActions; }
 
   /**
    * Actions that are defined to be exectuted on state-exit.
@@ -174,7 +174,7 @@ export class StateInfo {
    * @type {Iterable<InvocationInfo>}
    * @memberof StateInfo
    */
-  public get exitActions(): Iterable<InvocationInfo | null> { return this._exitActions; }
+  public get exitActions(): Iterable<InvocationInfo> { return this._exitActions; }
 
   /**
    * Transitions defined for this state.
@@ -219,7 +219,7 @@ export class StateInfo {
    * @memberof StateInfo
    */
   public toString(): string {
-    return !!this._underlyingState ? `${this._underlyingState}` : '<null>';
+    return !!this._underlyingState ? `${this._underlyingState}` : '<null2>';
   }
 
 }

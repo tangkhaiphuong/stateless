@@ -19,6 +19,7 @@ import { PhoneCall } from './phone-call';
   await phoneCall.print();
   await phoneCall.setVolume(11);
   await phoneCall.print();
-
+  console.log('DOT graph:');
+  console.log();
   console.log(phoneCall.toDotGraph());
 })();

@@ -29,6 +29,6 @@ export class TriggerInfo {
    * @memberof TriggerInfo
    */
   public toString(): string {
-    return this._underlyingTrigger || '<null>';
+    return this._underlyingTrigger || '<null2>';
   }
 }

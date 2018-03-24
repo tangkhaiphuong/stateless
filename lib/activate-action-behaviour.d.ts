@@ -19,8 +19,8 @@ export declare class ActivateActionBehaviour<TState> {
      * @param {InvocationInfo} _description
      * @memberof ActivateActionBehaviour
      */
-    constructor(_state: TState, _action: () => any | Promise<any>, _description: InvocationInfo | null);
+    constructor(_state: TState, _action: () => any | Promise<any>, _description: InvocationInfo);
     execute(): Promise<void>;
-    readonly description: InvocationInfo | null;
+    readonly description: InvocationInfo;
     readonly state: TState;
 }
