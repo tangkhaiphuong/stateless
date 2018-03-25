@@ -225,7 +225,7 @@ export class StateMachine<TState, TTrigger> {
    * @returns {Promise<void>} 
    * @memberof StateMachine
    */
-  private async internalFire(trigger: TTrigger, ...args: any[]): Promise<void> {
+  private async internalFire(trigger: TTrigger, args: any[]): Promise<void> {
     if (this._firing) {
       this._eventQueue.push({ trigger, args });
       return;
@@ -239,7 +239,7 @@ export class StateMachine<TState, TTrigger> {
       while (this._eventQueue.length !== 0) {
         const queuedEvent = this._eventQueue.shift();
         if (!!queuedEvent) {
-          await this.internalFireOne(queuedEvent.trigger, ...queuedEvent.args);
+          await this.internalFireOne(queuedEvent.trigger, queuedEvent.args);
         } else { break; }
       }
     }
@@ -248,12 +248,12 @@ export class StateMachine<TState, TTrigger> {
     }
   }
 
-  private async internalFireOne(trigger: TTrigger, ...args: any[]): Promise<void> {
+  private async internalFireOne(trigger: TTrigger, args: any[]): Promise<void> {
 
     const source = this.state;
     const representativeState = this.getRepresentation(source);
 
-    const [result, handler] = await representativeState.tryFindHandler(trigger);
+    const [result, handler] = await representativeState.tryFindHandler(trigger, args);
     if (!result || !handler) {
       await this._unhandledTriggerAction.execute(representativeState.underlyingState, trigger, !!handler ? handler.unmetGuardConditions : []);
       return;

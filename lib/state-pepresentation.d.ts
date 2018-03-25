@@ -40,7 +40,7 @@ export declare class StateRepresentation<TState, TTrigger> {
     addInternalAction(trigger: TTrigger, action: ((transition: Transition<TState, TTrigger>, args: any[]) => void)): void;
     activate(): Promise<void>;
     deactivate(): Promise<void>;
-    tryFindHandler(trigger: TTrigger, ...args: any[]): Promise<[boolean, TriggerBehaviourResult<TState, TTrigger> | undefined]>;
+    tryFindHandler(trigger: TTrigger, args: any[]): Promise<[boolean, TriggerBehaviourResult<TState, TTrigger> | undefined]>;
     private tryFindLocalHandler(trigger, args);
     private tryFindLocalHandlerResult(trigger, results, filter);
     addActivateAction(action: () => any | Promise<any>, activateActionDescription: InvocationInfo): void;
@@ -57,5 +57,5 @@ export declare class StateRepresentation<TState, TTrigger> {
     includes(state: TState): boolean;
     isIncludedIn(state: TState): boolean;
     readonly permittedTriggers: Promise<TTrigger[]>;
-    getPermittedTriggers(...args: any[]): Promise<TTrigger[]>;
+    getPermittedTriggers(args: any[]): Promise<TTrigger[]>;
 }

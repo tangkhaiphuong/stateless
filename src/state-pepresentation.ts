@@ -119,7 +119,7 @@ export class StateRepresentation<TState, TTrigger> {
     }
   }
 
-  public async tryFindHandler(trigger: TTrigger, ...args: any[])
+  public async tryFindHandler(trigger: TTrigger, args: any[])
     : Promise<[boolean, TriggerBehaviourResult<TState, TTrigger> | undefined]> {
     const [result, handler] = await this.tryFindLocalHandler(trigger, args);
     if (result) { return [result, handler]; }
@@ -288,10 +288,10 @@ export class StateRepresentation<TState, TTrigger> {
   }
 
   public get permittedTriggers(): Promise<TTrigger[]> {
-    return this.getPermittedTriggers();
+    return this.getPermittedTriggers([]);
   }
 
-  public getPermittedTriggers(...args: any[]): Promise<TTrigger[]> {
+  public getPermittedTriggers(args: any[]): Promise<TTrigger[]> {
     const implement = async () => {
       const result: TTrigger[] = [];
       for (const item of this._triggerBehaviours) {

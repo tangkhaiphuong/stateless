@@ -20,7 +20,7 @@ export class EntryActionBehaviour<TState, TTrigger> {
    * @memberof EntryActionBehaviour
    */
   constructor(
-    private readonly _action: ((transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>),
+    private readonly _action: ((transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>),
     private readonly _desscription: InvocationInfo,
     private readonly _trigger?: TTrigger) { }
 
@@ -28,7 +28,7 @@ export class EntryActionBehaviour<TState, TTrigger> {
     if (!!this._trigger) {
       if (transition.trigger !== this._trigger) { return; }
     }
-    const result = this._action(transition, args);
+    const result = this._action.apply(this._action, [transition].concat(args));
     if (result instanceof Promise) {
       await result;
     }

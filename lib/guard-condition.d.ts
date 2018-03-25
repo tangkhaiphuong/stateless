@@ -5,8 +5,8 @@ import { InvocationInfo } from './reflection/invocation-info';
 export declare class GuardCondition {
     private readonly _guard;
     private readonly _methodDescription;
-    constructor(_guard: ((args: any[]) => boolean | Promise<boolean>), _methodDescription: InvocationInfo);
-    readonly guard: ((args: any[]) => boolean | Promise<boolean>);
+    constructor(_guard: ((...args: any[]) => boolean | Promise<boolean>), _methodDescription: InvocationInfo);
+    readonly guard: ((...args: any[]) => boolean | Promise<boolean>);
     /**
      *  Return the description of the guard method: the caller-defined description if one
      *  was provided, else the name of the method itself

@@ -123,8 +123,8 @@ export declare class StateMachine<TState, TTrigger> {
      * @returns {Promise<void>}
      * @memberof StateMachine
      */
-    private internalFire(trigger, ...args);
-    private internalFireOne(trigger, ...args);
+    private internalFire(trigger, args);
+    private internalFireOne(trigger, args);
     /**
      * Override the default behaviour of throwing an exception when an unhandled trigger
      *
