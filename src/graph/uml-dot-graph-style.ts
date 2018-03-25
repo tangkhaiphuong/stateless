@@ -97,11 +97,11 @@ export class UmlDotGraphStyle extends GraphStyle {
    * @returns {string} 
    * @memberof UmlDotGraphStyle
    */
-  public formatOneTransition(sourceNodeName: string, trigger: string, actions: Iterable<string>, destinationNodeName: string, guards: Iterable<string>): string {
+  public formatOneTransition(sourceNodeName: string, trigger: string, actions: Iterable<string> | null, destinationNodeName: string, guards: Iterable<string>): string {
     let label = trigger || '';
 
-    const tempActions = [...actions];
-    if (actions && [...actions].length > 0) {
+    const tempActions = [...(actions || [])];
+    if (tempActions.length > 0) {
       label += ' / ' + tempActions.join(', ');
     }
 

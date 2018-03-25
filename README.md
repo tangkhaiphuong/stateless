@@ -96,19 +96,6 @@ Guard clauses within a state must be mutually exclusive (multiple guard clauses 
 
 The guard clauses will be evaluated whenever a trigger is fired. Guards should therefor be made side effect free.
 
-### Parameterised Triggers
-
-Strongly-typed parameters can be assigned to triggers:
-
-```typescript
-const assignTrigger = stateMachine.setTriggerParameters<string>(Trigger.Assign);
-
-stateMachine.configure(State.Assigned)
-    .onEntryFrom(assignTrigger, email => onAssigned(email));
-
-stateMachine.fire(assignTrigger, "joe@example.com");
-```
-
 Trigger parameters can be used to dynamically select the destination state using the `permitDynamic()` configuration method.
 
 ### Ignored Transitions and Reentrant States

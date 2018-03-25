@@ -217,7 +217,7 @@ export class StateGraph {
    */
   private addSuperstates(machineInfo: StateMachineInfo): void {
     for (const stateInfo of machineInfo.states) {
-      if ([...stateInfo.substates].length > 0 && !stateInfo.superstate) {
+      if ([...(stateInfo.substates || [])].length > 0 && !stateInfo.superstate) {
         const state = new SuperState(stateInfo);
         this.states.set(stateInfo.underlyingState, state);
         this.addSubstates(state, stateInfo.substates);
@@ -229,7 +229,7 @@ export class StateGraph {
     for (const subState of substates) {
       if (this.states.has(subState.underlyingState)) {
         // This shouldn't happen
-      } else if ([...subState.substates].length > 0) {
+      } else if ([...(subState.substates || [])].length > 0) {
         const sub = new SuperState(subState);
         this.states.set(subState.underlyingState, sub);
         superState.subStates.push(sub);

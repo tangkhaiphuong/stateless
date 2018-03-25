@@ -28,7 +28,7 @@ export declare class UmlDotGraphStyle extends GraphStyle {
      * @returns {string}
      * @memberof UmlDotGraphStyle
      */
-    formatOneTransition(sourceNodeName: string, trigger: string, actions: Iterable<string>, destinationNodeName: string, guards: Iterable<string>): string;
+    formatOneTransition(sourceNodeName: string, trigger: string, actions: Iterable<string> | null, destinationNodeName: string, guards: Iterable<string>): string;
     /**
      * Generate the text for a single decision node
      *

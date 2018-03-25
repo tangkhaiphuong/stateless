@@ -183,7 +183,7 @@ export class StateInfo {
    * @type {Iterable<TransitionInfo>}
    * @memberof StateInfo
    */
-  public get transitions(): Iterable<TransitionInfo> { return [...this._fixedTransitions, ...this._dynamicTransitions]; }
+  public get transitions(): Iterable<TransitionInfo> { return [...(this._fixedTransitions || []), ...(this._dynamicTransitions || [])]; }
 
   /**
    * Transitions defined for this state.

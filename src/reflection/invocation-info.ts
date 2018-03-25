@@ -9,21 +9,22 @@ export type Timing = 'Synchronous' | 'Asynchronous';
  */
 export class InvocationInfo {
 
-  public static create(method: ((...args: any[]) => any), description: string | null, timing: Timing = 'Synchronous'): InvocationInfo {
-    return new InvocationInfo(method.name || method.toString(), description, timing);
+  public static create(method: ((...args: any[]) => any), description: string | null): InvocationInfo {
+    const nameParts = method.name.split(' ');
+    const methodName = nameParts[nameParts.length - 1] || method.toString();
+    return new InvocationInfo(methodName === 'function () { [native code] }' ? '[Function]' : methodName, description);
   }
 
   /**
    * Creates an instance of InvocationInfo.
    * @param {string} _methodName 
-   * @param {string} _description 
-   * @param {Timing} _timing 
+   * @param {(string | null)} _description 
    * @memberof InvocationInfo
    */
   constructor(
     private readonly _methodName: string,
-    private readonly _description: string | null,
-    private readonly _timing: Timing) {      // description can be null if user didn't specify a description
+    private readonly _description: string | null) {
+    // description can be null if user didn't specify a description
   }
 
   /**
@@ -36,19 +37,9 @@ export class InvocationInfo {
   public get methodName() { return this._methodName; }
 
   /**
-   * Text returned for compiler - generated functions where the caller has not specified a description.
-   * 
-   * @readonly
-   * @static
-   * @type {string}
-   * @memberof InvocationInfo
-   */
-  public static get defaultFunctionDescription(): string { return 'Function'; }
-
-  /**
    * A description of the invoked method.  Returns:
    * 1) The user-specified description, if any
-   * 2) else if the method name is compiler-generated, returns DefaultFunctionDescription
+   * 2) else if the method name is compiler-generated, returns defaultFunctionDescription
    * 3) else the method name
    * 
    * @readonly
@@ -59,20 +50,6 @@ export class InvocationInfo {
     if (!!this._description) {
       return this._description;
     }
-    if (/<|>\`/.test(this._methodName)) {
-      return InvocationInfo.defaultFunctionDescription;
-    }
     return this.methodName || '<null>';
-  }
-
-  /**
-   * Returns true if the method is invoked asynchronously.
-   * 
-   * @readonly
-   * @type {boolean}
-   * @memberof InvocationInfo
-   */
-  public get isAsync(): boolean {
-    return this._timing === 'Asynchronous';
   }
 }

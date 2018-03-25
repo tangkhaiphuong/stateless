@@ -150,7 +150,7 @@ export class StateMachine<TState, TTrigger> {
       });
     }
 
-    return new StateMachineInfo([...info.values()], stateType, triggerType);
+    return new StateMachineInfo([...(info.values() || [])], stateType, triggerType);
   }
 
   private getRepresentation(state: TState): StateRepresentation<TState, TTrigger> {
@@ -318,7 +318,7 @@ export class StateMachine<TState, TTrigger> {
    * @memberof StateMachine
    */
   public async toString(): Promise<string> {
-    return `StateMachine { state = ${this.state}, permittedTriggers = { ${[...await this.permittedTriggers].join(', ')} }}`;
+    return `StateMachine { state = ${this.state}, permittedTriggers = { ${(await this.permittedTriggers).join(', ')} }}`;
   }
 
   private defaultUnhandledTriggerAction(state: TState, trigger: TTrigger, unmetGuardConditions: string[]) {
