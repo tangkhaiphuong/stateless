@@ -5,14 +5,15 @@ import { TransitionGuard } from './transition-guard';
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/TransitioningTriggerBehaviour.cs
  */
 export class TransitioningTriggerBehaviour<TState, TTrigger> extends TriggerBehaviour<TState, TTrigger> {
+
   /**
    * Creates an instance of TransitioningTriggerBehaviour.
    * @param {TTrigger} _trigger 
    * @param {TState} _destination 
-   * @param {TransitionGuard} _transitionGuard 
+   * @param {(TransitionGuard | null)} [_transitionGuard=null] 
    * @memberof TransitioningTriggerBehaviour
    */
-  constructor(_trigger: TTrigger, private readonly _destination: TState, _transitionGuard?: TransitionGuard) {
+  constructor(_trigger: TTrigger, private readonly _destination: TState, _transitionGuard: TransitionGuard | null = null) {
     super(_trigger, _transitionGuard);
   }
 

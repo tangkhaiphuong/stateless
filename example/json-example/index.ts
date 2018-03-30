@@ -1,3 +1,7 @@
+/**
+ * @link: https://github.com/dotnet-state-machine/stateless/blob/dev/example/JsonExample/Program.cs
+ */
+
 import { Member } from './member';
 
 (async () => {

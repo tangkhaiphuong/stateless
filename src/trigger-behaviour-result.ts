@@ -5,7 +5,9 @@ import { TriggerBehaviour } from './trigger-behaviour';
  */
 export class TriggerBehaviourResult<TState, TTrigger> {
 
-  constructor(private readonly _handler: TriggerBehaviour<TState, TTrigger>, private readonly _unmetGuardConditions: string[]) { }
+  constructor(
+    private readonly _handler: TriggerBehaviour<TState, TTrigger>,
+    private readonly _unmetGuardConditions: string[]) { }
 
   public get handler(): TriggerBehaviour<TState, TTrigger> { return this._handler; }
 

@@ -15,10 +15,10 @@ export declare abstract class TriggerBehaviour<TState, TTrigger> {
     /**
      * Creates an instance of TriggerBehaviour.
      * @param {TTrigger} _trigger
-     * @param {TransitionGuard<TState, TTrigger>} _guard TransitionGuard (null if no guard function)
+     * @param {(TransitionGuard | null)} guard TransitionGuard (null if no guard function)
      * @memberof TriggerBehaviour
      */
-    constructor(_trigger: TTrigger, _guard?: TransitionGuard);
+    constructor(_trigger: TTrigger, guard: TransitionGuard | null);
     readonly trigger: TTrigger;
     /**
      * Guard is the transition guard for this trigger.  Equal to TransitionGuard.Empty if there is no transition guard

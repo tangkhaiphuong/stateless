@@ -1,3 +1,7 @@
+/**
+ * @link: https://github.com/dotnet-state-machine/stateless/blob/dev/example/OnOffExample/Program.cs
+ */
+
 import { StateMachine } from '../../src';
 import * as readline from 'readline';
 import * as os from 'os';

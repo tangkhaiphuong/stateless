@@ -22,7 +22,7 @@ export class EntryActionBehaviour<TState, TTrigger> {
   constructor(
     private readonly _action: ((transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>),
     private readonly _desscription: InvocationInfo,
-    private readonly _trigger?: TTrigger) { }
+    private readonly _trigger: TTrigger | null = null) { }
 
   public async execute(transition: Transition<TState, TTrigger>, args: any[]): Promise<void> {
     if (!!this._trigger) {
@@ -34,7 +34,7 @@ export class EntryActionBehaviour<TState, TTrigger> {
     }
   }
 
-  public get trigger(): TTrigger | undefined { return this._trigger; }
+  public get trigger(): TTrigger | null { return this._trigger; }
 
   public get description(): InvocationInfo { return this._desscription; }
 }

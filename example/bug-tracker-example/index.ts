@@ -1,3 +1,7 @@
+/**
+ * @link: https://github.com/dotnet-state-machine/stateless/blob/dev/example/BugTrackerExample/Program.cs
+ */
+
 import { Bug } from './bug';
 
 (async (): Promise<void> => {

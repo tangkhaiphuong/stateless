@@ -175,7 +175,7 @@ export class StateConfiguration<TState, TTrigger> {
    * @memberof StateConfigurationThe receiver.
    */
   public ignore(trigger: TTrigger): StateConfiguration<TState, TTrigger> {
-    this._representation.addTriggerBehaviour(new IgnoredTriggerBehaviour<TState, TTrigger>(trigger, undefined, this.state));
+    this._representation.addTriggerBehaviour(new IgnoredTriggerBehaviour<TState, TTrigger>(this.state, trigger));
     return this;
   }
 
@@ -199,15 +199,15 @@ export class StateConfiguration<TState, TTrigger> {
     if (guards instanceof Array) {
       this._representation.addTriggerBehaviour(
         new IgnoredTriggerBehaviour<TState, TTrigger>(
+          state,
           trigger,
-          new TransitionGuard(...guards),
-          state));
+          new TransitionGuard(...guards)));
     } else {
       this._representation.addTriggerBehaviour(
         new IgnoredTriggerBehaviour<TState, TTrigger>(
+          state,
           trigger,
-          new TransitionGuard({ guard: guards, description: description }),
-          state));
+          new TransitionGuard({ guard: guards, description: description })));
     }
     return this;
   }
@@ -255,7 +255,7 @@ export class StateConfiguration<TState, TTrigger> {
   public onEntry(
     entryAction: ((transition: Transition<TState, TTrigger>) => any | Promise<any>),
     entryActionDescription: string | null = null): StateConfiguration<TState, TTrigger> {
-    this._representation.addEntryAction(undefined, entryAction, InvocationInfo.create(entryAction, entryActionDescription));
+    this._representation.addEntryAction(null, entryAction, InvocationInfo.create(entryAction, entryActionDescription));
     return this;
   }
 
@@ -351,7 +351,7 @@ export class StateConfiguration<TState, TTrigger> {
     this._representation.addTriggerBehaviour(
       new DynamicTriggerBehaviour<TState, TTrigger>(
         trigger, destinationStateSelector,
-        undefined,       // No transition guard
+        null,       // No transition guard
         DynamicTransitionInfo.create(trigger, null,
           InvocationInfo.create(destinationStateSelector, destinationStateSelectorDescription),
           possibleDestinationStates

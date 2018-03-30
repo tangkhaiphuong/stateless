@@ -12,6 +12,13 @@ export enum MembershipState {
   Terminated
 }
 
+/**
+ * Member class definition.
+ * 
+ * @export
+ * @class Member
+ * @link: https://github.com/dotnet-state-machine/stateless/blob/dev/example/JsonExample/Member.cs
+ */
 export class Member {
 
   private readonly _stateMachine: StateMachine<MembershipState, MemberTriggers>;

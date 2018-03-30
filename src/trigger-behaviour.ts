@@ -12,15 +12,18 @@ import { TransitionGuard } from './transition-guard';
  */
 export abstract class TriggerBehaviour<TState, TTrigger> {
 
+  private readonly _guard: TransitionGuard;
+
   /**
    * Creates an instance of TriggerBehaviour.
    * @param {TTrigger} _trigger 
-   * @param {TransitionGuard<TState, TTrigger>} _guard TransitionGuard (null if no guard function)
+   * @param {(TransitionGuard | null)} guard TransitionGuard (null if no guard function) 
    * @memberof TriggerBehaviour
    */
   constructor(
     private readonly _trigger: TTrigger,
-    private readonly _guard: TransitionGuard = TransitionGuard.empty) {
+    guard: TransitionGuard | null) {
+    this._guard = guard || TransitionGuard.empty;
     // If there is no guard function, _guard is set to TransitionGuard.empty
   }
 

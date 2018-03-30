@@ -7,7 +7,7 @@ import { DynamicTransitionInfo } from './reflection/dynamic-transition-info';
 export declare class DynamicTriggerBehaviour<TState, TTrigger> extends TriggerBehaviour<TState, TTrigger> {
     private readonly _destination;
     private readonly _transitionInfo;
-    constructor(trigger: TTrigger, _destination: ((args: any[]) => TState | Promise<TState>), transitionGuard: TransitionGuard | undefined, _transitionInfo: DynamicTransitionInfo);
+    constructor(trigger: TTrigger, _destination: ((args: any[]) => TState | Promise<TState>), transitionGuard: TransitionGuard | null, _transitionInfo: DynamicTransitionInfo);
     resultsInTransitionFrom(_source: TState, args: any[]): Promise<[boolean, TState]>;
     readonly transitionInfo: DynamicTransitionInfo;
 }

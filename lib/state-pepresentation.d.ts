@@ -45,7 +45,7 @@ export declare class StateRepresentation<TState, TTrigger> {
     private tryFindLocalHandlerResult(trigger, results, filter);
     addActivateAction(action: () => any | Promise<any>, activateActionDescription: InvocationInfo): void;
     addDeactivateAction(action: () => any | Promise<any>, deactivateActionDescription: InvocationInfo): void;
-    addEntryAction(trigger: TTrigger | undefined, action: ((transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>), entryActionDescription: InvocationInfo): void;
+    addEntryAction(trigger: TTrigger | null, action: ((transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>), entryActionDescription: InvocationInfo): void;
     addExitAction(action: ((transition: Transition<TState, TTrigger>) => any | Promise<any>), exitActionDescription: InvocationInfo): any;
     internalAction(transition: Transition<TState, TTrigger>, args: any[]): Promise<void>;
     enter(transition: Transition<TState, TTrigger>, entryArgs: any[]): Promise<void>;

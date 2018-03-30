@@ -21,6 +21,13 @@ enum State {
   PhoneDestroyed = 'PhoneDestroyed'
 }
 
+/**
+ * PhoneCall class definition.
+ * 
+ * @export
+ * @class PhoneCall
+ * @link: https://github.com/dotnet-state-machine/stateless/blob/dev/example/TelephoneCallExample/PhoneCall.cs
+ */
 export class PhoneCall {
 
   private _state: State = State.OffHook;

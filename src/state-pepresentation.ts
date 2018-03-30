@@ -184,7 +184,7 @@ export class StateRepresentation<TState, TTrigger> {
   }
 
   public addEntryAction(
-    trigger: TTrigger | undefined,
+    trigger: TTrigger | null,
     action: ((transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>),
     entryActionDescription: InvocationInfo) {
     this._entryActions.push(new EntryActionBehaviour<TState, TTrigger>(action, entryActionDescription, trigger));

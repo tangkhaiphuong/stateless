@@ -6,6 +6,7 @@ import { StateMachineInfo } from './reflection/state-machine-info';
 import { Transition } from './transition';
 import { StateInfo } from './reflection/state-info';
 import { TransitioningTriggerBehaviour } from './transitioning-trigger-behaviour';
+import { UmlDotGraph } from '.';
 
 /**
  * Models behaviour as transitions between a finite set of states.
@@ -311,14 +312,25 @@ export class StateMachine<TState, TTrigger> {
   public canFire(trigger: TTrigger): Promise<boolean> {
     return this.currentRepresentation.canHandle(trigger);
   }
+
   /**
-   * string
+   *  A human-readable representation of the state machine.
    * 
    * @returns {string} A description of the current state and permitted triggers.
    * @memberof StateMachine
    */
   public async toString(): Promise<string> {
     return `StateMachine { state = ${this.state}, permittedTriggers = { ${(await this.permittedTriggers).join(', ')} }}`;
+  }
+
+  /**
+   * Export state machine to dot graph.
+   * 
+   * @returns {string} The dot graph.
+   * @memberof StateMachine
+   */
+  public toDotGraph(): string {
+    return UmlDotGraph.format(this.getInfo());
   }
 
   private defaultUnhandledTriggerAction(state: TState, trigger: TTrigger, unmetGuardConditions: string[]) {
@@ -341,4 +353,5 @@ export class StateMachine<TState, TTrigger> {
   public onTransitioned(onTransitionAction: ((transition: Transition<TState, TTrigger>) => any | Promise<any>)): void {
     this._onTransitionedEvent.register(onTransitionAction);
   }
+
 }

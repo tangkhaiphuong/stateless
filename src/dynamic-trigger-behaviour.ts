@@ -10,7 +10,7 @@ export class DynamicTriggerBehaviour<TState, TTrigger> extends TriggerBehaviour<
   constructor(
     trigger: TTrigger,
     private readonly _destination: ((args: any[]) => TState | Promise<TState>),
-    transitionGuard: TransitionGuard | undefined,
+    transitionGuard: TransitionGuard | null,
     private readonly _transitionInfo: DynamicTransitionInfo, ) {
     super(trigger, transitionGuard);
   }

@@ -149,12 +149,19 @@ export declare class StateMachine<TState, TTrigger> {
      */
     canFire(trigger: TTrigger): Promise<boolean>;
     /**
-     * string
+     *  A human-readable representation of the state machine.
      *
      * @returns {string} A description of the current state and permitted triggers.
      * @memberof StateMachine
      */
     toString(): Promise<string>;
+    /**
+     * Export state machine to dot graph.
+     *
+     * @returns {string} The dot graph.
+     * @memberof StateMachine
+     */
+    toDotGraph(): string;
     private defaultUnhandledTriggerAction(state, trigger, unmetGuardConditions);
     /**
      * Registers a callback that will be invoked every time the statemachine transitions from one state into another.

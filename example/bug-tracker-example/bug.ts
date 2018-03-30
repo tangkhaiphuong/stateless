@@ -4,6 +4,13 @@ import { UmlDotGraph } from '../../src/graph/uml-dot-graph';
 enum State { Open, Assigned, Deferred, Resolved, Closed }
 enum Trigger { Assign, Defer, Resolve, Close }
 
+/**
+ * Bug class definition.
+ * 
+ * @export
+ * @class Bug
+ * @link: https://github.com/dotnet-state-machine/stateless/blob/dev/example/BugTrackerExample/Bug.cs
+ */
 export class Bug {
   private _state: State = State.Open;
   private _machine: StateMachine<State, Trigger>;

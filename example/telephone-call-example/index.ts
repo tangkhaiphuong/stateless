@@ -1,3 +1,7 @@
+/**
+ * @link: https://github.com/dotnet-state-machine/stateless/blob/dev/example/TelephoneCallExample/PhoneCall.cs
+ */
+
 import { PhoneCall } from './phone-call';
 
 (async () => {

@@ -8,12 +8,15 @@ export class IgnoredTriggerBehaviour<TState, TTrigger> extends TriggerBehaviour<
 
   /**
    * Creates an instance of IgnoredTriggerBehaviour.
-   * @param {TTrigger} trigger 
-   * @param {TransitionGuard} guard 
    * @param {TState} _destination 
+   * @param {TTrigger} trigger 
+   * @param {(TransitionGuard | null)} [guard=null] 
    * @memberof IgnoredTriggerBehaviour
    */
-  constructor(readonly trigger: TTrigger, guard: TransitionGuard | undefined, private readonly _destination: TState) {
+  constructor(
+    private readonly _destination: TState,
+    trigger: TTrigger,
+    guard: TransitionGuard | null = null) {
     super(trigger, guard);
   }
 
