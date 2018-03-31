@@ -1,7 +1,7 @@
 import { StateMachineInfo } from '../reflection/state-machine-info';
 import { GraphStyle } from './graph-style';
 import { State } from './state';
-import { BaseTransition } from './base-transition';
+import { Transition } from './transition';
 import { Decision } from './decision';
 import { SuperState } from './super-state';
 import { StateInfo } from '../reflection/state-info';
@@ -16,46 +16,46 @@ import { DynamicTransition } from './dynamic-transition';
  * @export
  * @class StateGraph
  */
-export class StateGraph {
+export class StateGraph<TState> {
 
-  private _state: Map<string, State> = new Map<string, State>();
-  private _transition: BaseTransition[] = [];
-  private _decisions: Decision[] = [];
+  private _state: Map<TState, State<TState>> = new Map<TState, State<TState>>();
+  private _transition: Array<Transition<TState>> = [];
+  private _decisions: Array<Decision<TState>> = [];
 
   /**
    * List of all states in the graph, indexed by the string representation of the underlying State object.
    * 
    * @readonly
-   * @type {Map<string, State>}
+   * @type {Map<string, State<TState>>}
    * @memberof StateGraph
    */
-  public get states(): Map<string, State> { return this._state; }
+  public get states(): Map<TState, State<TState>> { return this._state; }
 
   /**
    * List of all transitions in the graph
    * 
    * @readonly
-   * @type {BaseTransition[]}
+   * @type {Array<Transition<TState>>}
    * @memberof StateGraph
    */
-  public get transitions(): BaseTransition[] { return this._transition; }
+  public get transitions(): Array<Transition<TState>> { return this._transition; }
 
   /**
    * List of all decision nodes in the graph.  A decision node is generated each time there
    * is a PermitDynamic() transition.
    * 
    * @readonly
-   * @type {Decision[]}
+   * @type {Array<Decision<TState>>}
    * @memberof StateGraph
    */
-  public get decisions(): Decision[] { return this._decisions; }
+  public get decisions(): Array<Decision<TState>> { return this._decisions; }
 
   /**
    * Creates an instance of StateGraph.
-   * @param {StateMachineInfo} machineInfo 
+   * @param {StateMachineInfo<TState>} machineInfo 
    * @memberof StateGraph
    */
-  constructor(machineInfo: StateMachineInfo) {
+  constructor(machineInfo: StateMachineInfo<TState>) {
     // Start with top-level superstates
     this.addSuperstates(machineInfo);
 
@@ -72,11 +72,11 @@ export class StateGraph {
   /**
    * Convert the graph into a string representation, using the specified style.
    * 
-   * @param {GraphStyle} style 
+   * @param {GraphStyle<TState>} style 
    * @returns {string} 
    * @memberof StateGraph
    */
-  public toGraph(style: GraphStyle): string {
+  public toGraph(style: GraphStyle<TState>): string {
 
     let dirgraphText = style.getPrefix();
 
@@ -117,10 +117,10 @@ export class StateGraph {
    * was fired).
    * 
    * @private
-   * @param {StateMachineInfo} machineInfo 
+   * @param {StateMachineInfo<TState>} machineInfo 
    * @memberof StateGraph
    */
-  private processOnEntryFrom(machineInfo: StateMachineInfo): void {
+  private processOnEntryFrom(machineInfo: StateMachineInfo<TState>): void {
     for (const stateInfo of machineInfo.states) {
       const state = this.states.get(stateInfo.underlyingState);
       if (!state) {
@@ -145,10 +145,10 @@ export class StateGraph {
    * Add all transitions to the graph
    * 
    * @private
-   * @param {StateMachineInfo} machineInfo 
+   * @param {StateMachineInfo<TState>} machineInfo 
    * @memberof StateGraph
    */
-  private addTransitions(machineInfo: StateMachineInfo): void {
+  private addTransitions(machineInfo: StateMachineInfo<TState>): void {
     for (const stateInfo of machineInfo.states) {
       const fromState = this.states.get(stateInfo.underlyingState);
       for (const fix of stateInfo.fixedTransitions) {
@@ -198,10 +198,10 @@ export class StateGraph {
    * Add states to the graph that are neither superstates, nor substates of a superstate.
    * 
    * @private
-   * @param {StateMachineInfo} machineInfo 
+   * @param {StateMachineInfo<TState>} machineInfo 
    * @memberof StateGraph
    */
-  private addSingleStates(machineInfo: StateMachineInfo): void {
+  private addSingleStates(machineInfo: StateMachineInfo<TState>): void {
     for (const stateInfo of machineInfo.states) {
       if (!this.states.has(stateInfo.underlyingState)) {
         this.states.set(stateInfo.underlyingState, new State(stateInfo));
@@ -215,7 +215,7 @@ export class StateGraph {
    * @private
    * @memberof StateGraph
    */
-  private addSuperstates(machineInfo: StateMachineInfo): void {
+  private addSuperstates(machineInfo: StateMachineInfo<TState>): void {
     for (const stateInfo of machineInfo.states) {
       if ([...(stateInfo.substates || [])].length > 0 && !stateInfo.superstate) {
         const state = new SuperState(stateInfo);
@@ -225,7 +225,7 @@ export class StateGraph {
     }
   }
 
-  private addSubstates(superState: SuperState, substates: Iterable<StateInfo>): void {
+  private addSubstates(superState: SuperState<TState>, substates: Iterable<StateInfo<TState>>): void {
     for (const subState of substates) {
       if (this.states.has(subState.underlyingState)) {
         // This shouldn't happen

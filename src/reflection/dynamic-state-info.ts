@@ -3,18 +3,19 @@
  * 
  * @export
  * @class DynamicStateInfo
+ * @template TState 
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/Reflection/DynamicTransitionInfo.cs
  */
-export class DynamicStateInfo {
+export class DynamicStateInfo<TState> {
 
   /**
    * Creates an instance of DynamicStateInfo.
-   * @param {string} _destinationState 
+   * @param { TState} _destinationState 
    * @param {string} _criterion 
    * @memberof DynamicStateInfo
    */
   constructor(
-    private readonly _destinationState: string,
+    private readonly _destinationState: TState,
     private readonly _criterion: string) {
   }
 
@@ -25,7 +26,7 @@ export class DynamicStateInfo {
    * @type {string}
    * @memberof DynamicStateInfo
    */
-  public get destinationState(): string { return this._destinationState; }
+  public get destinationState(): TState { return this._destinationState; }
 
   /**
    * The reason this destination state was chosen

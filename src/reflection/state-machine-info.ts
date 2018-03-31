@@ -7,17 +7,17 @@ import { StateInfo } from './state-info';
  * @class StateMachineInfo
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/Reflection/StateMachineInfo.cs
  */
-export class StateMachineInfo {
+export class StateMachineInfo<TState> {
 
   /**
    * Creates an instance of StateMachineInfo.
-   * @param {Iterable<StateInfo>} _states 
+   * @param {Iterable<StateInfo<TState>>} _states 
    * @param {string} _stateType 
    * @param {string} _triggerType 
    * @memberof StateMachineInfo
    */
   constructor(
-    private readonly _states: Iterable<StateInfo>,
+    private readonly _states: Iterable<StateInfo<TState>>,
     private readonly _stateType: string,
     private readonly _triggerType: string) {
   }
@@ -26,10 +26,10 @@ export class StateMachineInfo {
    * Exposes the states, transitions, and actions of this machine.
    * 
    * @readonly
-   * @type {Iterable<StateInfo>}
+   * @type {Iterable<StateInfo<TState>>}
    * @memberof StateMachineInfo
    */
-  public get states(): Iterable<StateInfo> { return this._states; }
+  public get states(): Iterable<StateInfo<TState>> { return this._states; }
 
   /**
    * The type of the underlying state.

@@ -6,11 +6,11 @@ import { ActionInfo } from '../reflection/action-info';
  * Used to keep track of transitions between states
  * 
  * @export
- * @class BaseTransition
+ * @class Transition
  * @template TState 
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/Graph/Transition.cs
  */
-export abstract class BaseTransition<TState> {
+export abstract class Transition<TState> {
 
   protected _executeEntryExitActions: boolean = true;
 

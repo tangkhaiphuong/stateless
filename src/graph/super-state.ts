@@ -9,25 +9,25 @@ import { StateInfo } from '../reflection/state-info';
  * @extends {State}
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/Graph/SuperState.cs
  */
-export class SuperState extends State {
+export class SuperState<TState> extends State<TState> {
 
-  private _subStates: State[] = [];
+  private _subStates: Array<State<TState>> = [];
 
   /**
    * List of states that are a substate of this state
    * 
    * @readonly
-   * @type {State[]}
+   * @type {Array<State<TState>>}
    * @memberof SuperState
    */
-  public get subStates(): State[] { return this._subStates; }
+  public get subStates(): Array<State<TState>> { return this._subStates; }
 
   /**
    * Creates an instance of SuperState.
    * @param {StateInfo} stateInfo 
    * @memberof SuperState
    */
-  constructor(stateInfo: StateInfo) {
+  constructor(stateInfo: StateInfo<TState>) {
     super(stateInfo);
   }
 }

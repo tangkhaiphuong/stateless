@@ -1,21 +1,21 @@
 import { TriggerInfo } from '../reflection/trigger-info';
 import { State } from './state';
-import { BaseTransition } from './base-transition';
+import { Transition } from './transition';
 import { InvocationInfo } from '../reflection/invocation-info';
 
 /**
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/Graph/Transition.cs#L45
  */
-export class FixedTransition extends BaseTransition {
+export class FixedTransition<TState> extends Transition<TState> {
 
   /**
    * The state where this transition finishes
    * 
    * @readonly
-   * @type {State}
+   * @type {State<TState>}
    * @memberof FixedTransition
    */
-  public get destinationState(): State { return this._destinationState; }
+  public get destinationState(): State<TState> { return this._destinationState; }
 
   /**
    * Guard functions for this transition (null if none)
@@ -28,15 +28,15 @@ export class FixedTransition extends BaseTransition {
 
   /**
    * Creates an instance of FixedTransition.
-   * @param {State} sourceState 
-   * @param {State} _destinationState 
+   * @param {State<TState>} sourceState 
+   * @param {State<TState>} _destinationState 
    * @param {TriggerInfo} trigger 
    * @param {Iterable<InvocationInfo>} _guards 
    * @memberof FixedTransition
    */
   constructor(
-    sourceState: State,
-    private _destinationState: State,
+    sourceState: State<TState>,
+    private _destinationState: State<TState>,
     trigger: TriggerInfo,
     private _guards: Iterable<InvocationInfo>) {
     super(sourceState, trigger);

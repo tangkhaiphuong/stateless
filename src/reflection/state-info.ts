@@ -15,16 +15,20 @@ import { TransitionInfo } from './transition-info';
  * 
  * @export
  * @class StateInfo
+ * @template TState 
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/Reflection/StateInfo.cs
  */
-export class StateInfo {
+export class StateInfo<TState> {
 
-  private _dynamicTransitions: Iterable<DynamicTransitionInfo> = [];
-  private _fixedTransitions: Iterable<FixedTransitionInfo> = [];
-  private _superstate: StateInfo | null = null;
-  private _substates: Iterable<StateInfo> = [];
+  private _dynamicTransitions: Iterable<DynamicTransitionInfo<TState>> = [];
+  private _fixedTransitions: Iterable<FixedTransitionInfo<TState>> = [];
+  private _superstate: StateInfo<TState> | null = null;
+  private _substates: Iterable<StateInfo<TState>> = [];
 
-  public static createStateInfo<TState, TTrigger>(stateRepresentation: StateRepresentation<TState, TTrigger>): StateInfo {
+  public static createStateInfo<TState, TTrigger>(
+    stateRepresentation: StateRepresentation<TState, TTrigger>,
+    isActive: boolean = false,
+  ): StateInfo<TState> {
 
     const ignoredTriggers: IgnoredTransitionInfo[] = [];
 
@@ -43,42 +47,45 @@ export class StateInfo {
       stateRepresentation.entryActions.map(e => ActionInfo.create(e)),
       stateRepresentation.activateActions.map(e => e.description),
       stateRepresentation.deactivateActions.map(e => e.description),
-      stateRepresentation.exitActions.map(e => e.description));
+      stateRepresentation.exitActions.map(e => e.description),
+      isActive);
   }
 
   /**
    * Creates an instance of StateInfo.
-   * @param {*} _underlyingState 
+   * @param {TState} _underlyingState 
    * @param {Iterable<IgnoredTransitionInfo>} _ignoredTriggers 
    * @param {Iterable<ActionInfo>} _entryActions 
    * @param {Iterable<InvocationInfo>} _activateActions 
    * @param {Iterable<InvocationInfo>} _deactivateActions 
    * @param {Iterable<InvocationInfo>} _exitActions 
+   * @param {boolean} [_isActive=false] 
    * @memberof StateInfo
    */
   constructor(
-    private readonly _underlyingState: any,
+    private readonly _underlyingState: TState,
     private readonly _ignoredTriggers: Iterable<IgnoredTransitionInfo>,
     private readonly _entryActions: Iterable<ActionInfo>,
     private readonly _activateActions: Iterable<InvocationInfo>,
     private readonly _deactivateActions: Iterable<InvocationInfo>,
-    private readonly _exitActions: Iterable<InvocationInfo>) {
+    private readonly _exitActions: Iterable<InvocationInfo>,
+    private readonly _isActive: boolean = false) {
   }
 
   public static addRelationships<TState, TTrigger>(
-    info: StateInfo,
+    info: StateInfo<TState>,
     stateRepresentation: StateRepresentation<TState, TTrigger>,
-    lookupState: (state: TState) => StateInfo) {
+    lookupState: (state: TState) => StateInfo<TState>, ) {
 
     const substates = stateRepresentation.getSubstates().map(s => lookupState(s.underlyingState) || null);
 
-    let superstate: StateInfo | undefined;
+    let superstate: StateInfo<TState> | undefined;
     if (!!stateRepresentation.superstate) {
       superstate = lookupState(stateRepresentation.superstate.underlyingState);
     }
 
-    const fixedTransitions: FixedTransitionInfo[] = [];
-    const dynamicTransitions: DynamicTransitionInfo[] = [];
+    const fixedTransitions: Array<FixedTransitionInfo<TState>> = [];
+    const dynamicTransitions: Array<DynamicTransitionInfo<TState>> = [];
 
     for (const triggerBehaviours of stateRepresentation.triggerBehaviours) {
       // First add all the deterministic transitions
@@ -103,15 +110,24 @@ export class StateInfo {
   }
 
   private addRelationships(
-    superstate: StateInfo | null,
-    substates: Iterable<StateInfo>,
-    transitions: Iterable<FixedTransitionInfo>,
-    dynamicTransitions: Iterable<DynamicTransitionInfo>) {
+    superstate: StateInfo<TState> | null,
+    substates: Iterable<StateInfo<TState>>,
+    transitions: Iterable<FixedTransitionInfo<TState>>,
+    dynamicTransitions: Iterable<DynamicTransitionInfo<TState>>) {
     this._superstate = superstate;
     this._substates = substates;
     this._fixedTransitions = transitions;
     this._dynamicTransitions = dynamicTransitions;
   }
+
+  /**
+   * Checking this is current state.
+   * 
+   * @readonly
+   * @type {{}
+   * @memberof StateInfo
+   */
+  public get isActive(): boolean { return this._isActive; }
 
   /**
    * The instance or value this state represents.
@@ -120,7 +136,7 @@ export class StateInfo {
    * @type {*}
    * @memberof StateInfo
    */
-  public get underlyingState(): any { return this._underlyingState; }
+  public get underlyingState(): TState { return this._underlyingState; }
 
   /**
    * Substates defined for this StateResource.
@@ -129,7 +145,7 @@ export class StateInfo {
    * @type {(Iterable<StateInfo | null>)}
    * @memberof StateInfo
    */
-  public get substates(): Iterable<StateInfo> { return this._substates; }
+  public get substates(): Iterable<StateInfo<TState>> { return this._substates; }
 
   /**
    * Superstate defined, if any, for this StateResource.
@@ -138,7 +154,7 @@ export class StateInfo {
    * @type {StateInfo}
    * @memberof StateInfo
    */
-  public get superstate(): StateInfo | null { return this._superstate; }
+  public get superstate(): StateInfo<TState> | null { return this._superstate; }
 
   /**
    * Actions that are defined to be executed on state-entry.
@@ -189,19 +205,19 @@ export class StateInfo {
    * Transitions defined for this state.
    * 
    * @readonly
-   * @type {Iterable<FixedTransitionInfo>}
+   * @type {Iterable<FixedTransitionInfo<TState>>}
    * @memberof StateInfo
    */
-  public get fixedTransitions(): Iterable<FixedTransitionInfo> { return this._fixedTransitions; }
+  public get fixedTransitions(): Iterable<FixedTransitionInfo<TState>> { return this._fixedTransitions; }
 
   /**
    * Dynamic Transitions defined for this state internally.
    * 
    * @readonly
-   * @type {Iterable<DynamicTransitionInfo>}
+   * @type {Iterable<DynamicTransitionInfo<TState>>}
    * @memberof StateInfo
    */
-  public get dynamicTransitions(): Iterable<DynamicTransitionInfo> { return this._dynamicTransitions; }
+  public get dynamicTransitions(): Iterable<DynamicTransitionInfo<TState>> { return this._dynamicTransitions; }
 
   /**
    * Triggers ignored for this state.

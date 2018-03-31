@@ -12,8 +12,8 @@ phoneCall.configure(State.Ringing)
     .permit(Trigger.CallConnected, State.Connected);
  
 phoneCall.configure(State.Connected)
-    .onEntry(() => startCallTimer())
-    .onExit(() => stopCallTimer())
+    .onEntry(() => this.startCallTimer())
+    .onExit(() => this.stopCallTimer())
     .permit(Trigger.LeftMessage, State.OffHook)
     .permit(Trigger.PlacedOnHold, State.OnHold);
 
@@ -70,8 +70,8 @@ Stateless is designed to be embedded in various application models. For example,
 
 ```typescript
 const stateMachine = new StateMachine<State, Trigger>({
-    accessor: () => myState.value,
-    mutator: s => myState.value = s});
+    accessor: () => this.myState,
+    mutator: state => this.myState = sstate});
 ```
 
 In this example the state machine will use the `myState` object for state storage.
@@ -88,8 +88,8 @@ The state machine will choose between multiple transitions based on guard clause
 
 ```typescript
 phoneCall.configure(State.OffHook)
-    .permitIf(Trigger.CallDialled, State.Ringing, () => isValidNumber)
-    .permitIf(Trigger.CallDialled, State.Beeping, () => !isValidNumber);
+    .permitIf(Trigger.CallDialled, State.Ringing, () => this.isValidNumber)
+    .permitIf(Trigger.CallDialled, State.Beeping, () => !this.isValidNumber);
 ```
 
 Guard clauses within a state must be mutually exclusive (multiple guard clauses cannot be valid at the same time.) Substates can override transitions by respecifying them, however substates cannot disallow transitions that are allowed by the superstate.
@@ -114,7 +114,7 @@ Alternatively, a state can be marked reentrant so its entry and exit events will
 ```typescript
 stateMachine.configure(State.Assigned)
     .permitReentry(Trigger.Assigned)
-    .onEntry(() => sendEmailToAssignee());
+    .onEntry(() => this.sendEmailToAssignee());
 ```
 
 By default, triggers must be ignored explicitly. To override Stateless's default behaviour of throwing an exception when an unhandled trigger is fired, configure the state machine using the `onUnhandledTrigger` method:
@@ -132,6 +132,12 @@ phoneCall.configure(State.OffHook)
     .permitIf(Trigger.CallDialled, State.Ringing, isValidNumber);
     
 const graph = UmlDotGraph.format(phoneCall.getInfo());
+```
+
+It can support to display current state of state machines.
+
+```typescript   
+const graph = UmlDotGraph.format(phoneCall.getInfo(), true);
 ```
 
 The `UmlDotGraph.format()` method returns a string representation of the state machine in the [DOT graph language](https://en.wikipedia.org/wiki/DOT_(graph_description_language)), e.g.:

@@ -14,12 +14,16 @@ export class UmlDotGraph {
    * Generate a UML DOT graph from the state machine info
    * 
    * @static
-   * @param {StateMachineInfo} machineInfo 
+   * @template TState 
+   * @param {StateMachineInfo<TState>} machineInfo State machine information.
+   * @param {boolean} [isVisibleCurrentState=false] Visible current state or not.
    * @returns {string} 
    * @memberof UmlDotGraph
    */
-  public static format(machineInfo: StateMachineInfo, ): string {
+  public static format<TState>(
+    machineInfo: StateMachineInfo<TState>,
+    isVisibleCurrentState: boolean = false): string {
     const graph = new StateGraph(machineInfo);
-    return graph.toGraph(new UmlDotGraphStyle());
+    return graph.toGraph(new UmlDotGraphStyle(isVisibleCurrentState));
   }
 }

@@ -7,7 +7,7 @@ import { DynamicStateInfo } from './dynamic-state-info';
  * @class DynamicStateInfos
  * @extends {Array<DynamicStateInfo>}
  */
-export class DynamicStateInfos extends Array<DynamicStateInfo> {
+export class DynamicStateInfos<TState> extends Array<DynamicStateInfo<TState>> {
 
   /**
    * Add a DynamicStateInfo with less typing
@@ -16,7 +16,7 @@ export class DynamicStateInfos extends Array<DynamicStateInfo> {
    * @param {string} criterion 
    * @memberof DynamicStateInfos
    */
-  public add<TState>(destinationState: TState | string, criterion: string): void {
-    super.push(new DynamicStateInfo(`${destinationState}`, criterion));
+  public add(destinationState: TState, criterion: string): void {
+    super.push(new DynamicStateInfo<TState>(destinationState, criterion));
   }
 }

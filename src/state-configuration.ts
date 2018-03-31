@@ -346,7 +346,7 @@ export class StateConfiguration<TState, TTrigger> {
     trigger: TTrigger,
     destinationStateSelector: ((args: any[]) => TState),
     destinationStateSelectorDescription: string | null = null,
-    possibleDestinationStates: DynamicStateInfos | null = null
+    possibleDestinationStates: DynamicStateInfos<TState> | null = null
   ): StateConfiguration<TState, TTrigger> {
     this._representation.addTriggerBehaviour(
       new DynamicTriggerBehaviour<TState, TTrigger>(
@@ -414,7 +414,7 @@ export class StateConfiguration<TState, TTrigger> {
     destinationStateSelector: ((args: any[]) => TState),
     destinationStateSelectorDescription: string,
     transitionGuard: TransitionGuard,
-    possibleDestinationStates: DynamicStateInfos | null
+    possibleDestinationStates: DynamicStateInfos<TState> | null
   ): StateConfiguration<TState, TTrigger> {
 
     this._representation.addTriggerBehaviour(new DynamicTriggerBehaviour(trigger,

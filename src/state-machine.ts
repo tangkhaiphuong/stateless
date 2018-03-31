@@ -6,7 +6,6 @@ import { StateMachineInfo } from './reflection/state-machine-info';
 import { Transition } from './transition';
 import { StateInfo } from './reflection/state-info';
 import { TransitioningTriggerBehaviour } from './transitioning-trigger-behaviour';
-import { UmlDotGraph } from '.';
 
 /**
  * Models behaviour as transitions between a finite set of states.
@@ -104,10 +103,12 @@ export class StateMachine<TState, TTrigger> {
    * 
    * @param {string} stateType 
    * @param {string} triggerType 
-   * @returns {StateMachineInfo} 
+   * @returns {StateMachineInfo<TState>} 
    * @memberof StateMachine
    */
-  public getInfo(stateType: string = 'State', triggerType: string = 'Trigger'): StateMachineInfo {
+  public getInfo(
+    stateType: string = 'State',
+    triggerType: string = 'Trigger'): StateMachineInfo<TState> {
 
     const representations = new Map<TState, StateRepresentation<TState, TTrigger>>(this._stateConfiguration);
 
@@ -136,9 +137,10 @@ export class StateMachine<TState, TTrigger> {
       representations.set(representation.underlyingState, representation);
     }
 
-    const info = new Map<TState, StateInfo>();
+    const state = this.state;
+    const info = new Map<TState, StateInfo<TState>>();
     for (const item of representations) {
-      info.set(item[0], StateInfo.createStateInfo<TState, TTrigger>(item[1]));
+      info.set(item[0], StateInfo.createStateInfo<TState, TTrigger>(item[1], state === item[1].underlyingState));
     }
 
     for (const state of info) {
@@ -321,16 +323,6 @@ export class StateMachine<TState, TTrigger> {
    */
   public async toString(): Promise<string> {
     return `StateMachine { state = ${this.state}, permittedTriggers = { ${(await this.permittedTriggers).join(', ')} }}`;
-  }
-
-  /**
-   * Export state machine to dot graph.
-   * 
-   * @returns {string} The dot graph.
-   * @memberof StateMachine
-   */
-  public toDotGraph(): string {
-    return UmlDotGraph.format(this.getInfo());
   }
 
   private defaultUnhandledTriggerAction(state: TState, trigger: TTrigger, unmetGuardConditions: string[]) {

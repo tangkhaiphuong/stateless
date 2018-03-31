@@ -7,9 +7,11 @@ import { InvocationInfo } from '../reflection/invocation-info';
  * @export
  * @class Decision
  * @extends {State}
+ * @template TState
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/Graph/Decision.cs
  */
-export class Decision extends State {
+
+export class Decision<TState> extends State<TState> {
 
   public get method(): InvocationInfo { return this._method; }
 

@@ -1,6 +1,6 @@
 import { State } from './state';
 import { SuperState } from './super-state';
-import { BaseTransition } from './base-transition';
+import { Transition } from './transition';
 import { StayTransition } from './stay-transition';
 import { FixedTransition } from './fixed-transition';
 import { DynamicTransition } from './dynamic-transition';
@@ -13,9 +13,10 @@ import { InvocationInfo } from '../reflection/invocation-info';
  * @export
  * @abstract
  * @class GraphStyle
+ * @template TState 
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/Graph/IGraphStyle.cs
  */
-export abstract class GraphStyle {
+export abstract class GraphStyle<TState> {
 
   /**
    * Get the text that must be present at the top of a state graph file.
@@ -35,22 +36,22 @@ export abstract class GraphStyle {
    * Usually the information on exit and entry actions would also be included here.
    * 
    * @abstract
-   * @param {State} state The state to generate text for
+   * @param {State<TState>} state The state to generate text for
    * @returns {string} Description of the state in the desired format
    * @memberof GraphStyle
    */
-  public abstract formatOneState(state: State): string;
+  public abstract formatOneState(state: State<TState>): string;
 
   /**
    * Returns the formatted text for a single superstate and its substates.
    * For example, for DOT files this would be a subgraph containing nodes for all the substates.
    * 
    * @abstract
-   * @param {SuperState} stateInfo The superstate to generate text for
+   * @param {SuperState<TState>} stateInfo The superstate to generate text for
    * @returns {string} Description of the superstate, and all its substates, in the desired format
    * @memberof GraphStyle
    */
-  public abstract formatOneCluster(stateInfo: SuperState): string;
+  public abstract formatOneCluster(stateInfo: SuperState<TState>): string;
 
   /**
    * Returns the formatted text for a single decision node.
@@ -72,11 +73,11 @@ export abstract class GraphStyle {
    * This form, which can be overridden, determines the type of each transition and passes the appropriate
    * parameters to the virtual formatOneTransition() function.
    * 
-   * @param {Iterable<BaseTransition>} transitions List of all transitions in the state graph
+   * @param {Iterable<Transition<TState>>} transitions List of all transitions in the state graph
    * @returns {Iterable<string>} Description of all transitions, in the desired format
    * @memberof GraphStyle
    */
-  public * formatAllTransitions(transitions: Iterable<BaseTransition>): Iterable<string> {
+  public * formatAllTransitions(transitions: Iterable<Transition<TState>>): Iterable<string> {
 
     const iterableDescription = function* (guards: Iterable<InvocationInfo>): Iterable<string> {
       for (const item of guards) {

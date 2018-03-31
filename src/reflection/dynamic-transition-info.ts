@@ -10,13 +10,13 @@ import { TriggerInfo } from './trigger-info';
  * @class DynamicTransitionInfo
  * @extends {TransitionInfo}
  */
-export class DynamicTransitionInfo extends TransitionInfo {
+export class DynamicTransitionInfo<TState> extends TransitionInfo {
 
-  public static create<TTrigger>(
+  public static create<TState, TTrigger>(
     trigger: TTrigger,
     guards: Iterable<InvocationInfo> | null,
     selector: InvocationInfo,
-    possibleStates: DynamicStateInfos | null): DynamicTransitionInfo {
+    possibleStates: DynamicStateInfos<TState> | null): DynamicTransitionInfo<TState> {
 
     const transition = new DynamicTransitionInfo(
       new TriggerInfo(trigger),
@@ -39,12 +39,12 @@ export class DynamicTransitionInfo extends TransitionInfo {
     _trigger: TriggerInfo,
     _guardConditionsMethodDescriptions: Iterable<InvocationInfo>,
     private readonly _destinationStateSelectorDescription: InvocationInfo,
-    private readonly _possibleDestinationStates: DynamicStateInfos | null
+    private readonly _possibleDestinationStates: DynamicStateInfos<TState> | null
   ) {
     super(_trigger, _guardConditionsMethodDescriptions);
   }
 
   public get destinationStateSelectorDescription(): InvocationInfo { return this._destinationStateSelectorDescription; }
 
-  public get possibleDestinationStates(): DynamicStateInfos | null { return this._possibleDestinationStates; }
+  public get possibleDestinationStates(): DynamicStateInfos<TState> | null { return this._possibleDestinationStates; }
 }

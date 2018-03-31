@@ -21,9 +21,21 @@ function htmlEntities(unsafe: string) {
 /**
  * Generate DOT graphs in basic UML style
  * 
+ * @export
  * @class UmlDotGraphStyle
+ * @extends {GraphStyle}
+ * @template TState 
  */
-export class UmlDotGraphStyle extends GraphStyle {
+export class UmlDotGraphStyle<TState> extends GraphStyle<TState> {
+
+  /**
+   * Creates an instance of UmlDotGraphStyle.
+   * @param {boolean} _isVisibleCurrentState 
+   * @memberof UmlDotGraphStyle
+   */
+  constructor(private readonly _isVisibleCurrentState: boolean) {
+    super();
+  }
 
   /// <summary>Get the text that starts a new graph</summary>
   /// <returns></returns>
@@ -34,7 +46,14 @@ export class UmlDotGraphStyle extends GraphStyle {
       + 'rankdir="LR"\n';
   }
 
-  public formatOneCluster(stateInfo: SuperState) {
+  /**
+   * Generate one cluster.
+   * 
+   * @param {SuperState<TState>} stateInfo 
+   * @returns 
+   * @memberof UmlDotGraphStyle
+   */
+  public formatOneCluster(stateInfo: SuperState<TState>) {
 
     let stateRepresentationString = '';
 
@@ -63,17 +82,17 @@ export class UmlDotGraphStyle extends GraphStyle {
   /**Generate the text for a single state
    * 
    * 
-   * @param {State} state The state to generate text for
+   * @param {State<TState>} state The state to generate text for
    * @returns {string} 
    * @memberof UmlDotGraphStyle
    */
-  public formatOneState(state: State): string {
+  public formatOneState(state: State<TState>): string {
 
     if ((state.entryActions.length === 0) && (state.exitActions.length === 0)) {
-      return `"${state.stateName}"` + ' [label="' + state.stateName + '"];\n';
+      return `"${state.stateName}"` + ` [${this._isVisibleCurrentState && state.isActive ? 'style="bold, filled", ' : ''}label="` + state.stateName + '"];\n';
     }
 
-    let f = `"${state.stateName}"` + ' [label="' + state.stateName + '|';
+    let f = `"${state.stateName}"` + ` [${this._isVisibleCurrentState && state.isActive ? 'style="bold, filled", ' : ''}label="` + state.stateName + '|';
 
     let es: string[] = [];
     es = es.concat(state.entryActions.map(act => 'entry / ' + htmlEntities(act)));

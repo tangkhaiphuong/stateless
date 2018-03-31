@@ -128,6 +128,7 @@ async function manageAssets(): Promise<void> {
 
     if (choice === 'K') {
       console.log('Exiting asset management.');
+      console.log();
       console.log(asset!.getDOTGraph());
 
     } else {

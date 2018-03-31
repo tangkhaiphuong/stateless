@@ -11,7 +11,7 @@ export class DynamicTriggerBehaviour<TState, TTrigger> extends TriggerBehaviour<
     trigger: TTrigger,
     private readonly _destination: ((args: any[]) => TState | Promise<TState>),
     transitionGuard: TransitionGuard | null,
-    private readonly _transitionInfo: DynamicTransitionInfo, ) {
+    private readonly _transitionInfo: DynamicTransitionInfo<TState>) {
     super(trigger, transitionGuard);
   }
 
@@ -24,5 +24,5 @@ export class DynamicTriggerBehaviour<TState, TTrigger> extends TriggerBehaviour<
     }
   }
 
-  public get transitionInfo(): DynamicTransitionInfo { return this._transitionInfo; }
+  public get transitionInfo(): DynamicTransitionInfo<TState> { return this._transitionInfo; }
 }

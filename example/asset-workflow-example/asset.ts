@@ -63,29 +63,29 @@ export class Asset {
 
     this._machine.configure(State.New)
       .permit(Trigger.Tested, State.Available)
-      .onEntry(() => this.onEntry.bind(this))
-      .onActivate(() => this.onActivate.bind(this))
+      .onEntry(this.onEntry.bind(this))
+      .onActivate(this.onActivate.bind(this))
       .permit(Trigger.Lost, State.Unavailable)
-      .onDeactivate(() => this.onDeactivate.bind(this))
-      .onExit(() => this.onExit.bind(this));
+      .onDeactivate(this.onDeactivate.bind(this))
+      .onExit(this.onExit.bind(this));
 
     this._machine.configure(State.Available)
-      .onEntry(() => this.onEntry.bind(this))
-      .onActivate(() => this.onActivate.bind(this))
+      .onEntry(this.onEntry.bind(this))
+      .onActivate(this.onActivate.bind(this))
       .permit(Trigger.Assigned, State.Allocated)
       .permit(Trigger.Lost, State.Unavailable)
-      .onExit(() => this.onExit.bind(this))
+      .onExit(this.onExit.bind(this))
       .onEntryFrom(Trigger.Found, this.processFound.bind(this))
       .onEntryFrom(Trigger.Released, this.pocessDecommission.bind(this))
-      .onDeactivate(() => this.onDeactivate.bind(this));
+      .onDeactivate(this.onDeactivate.bind(this));
 
     this._machine.configure(State.Allocated)
-      .onEntry(() => this.onEntry.bind(this))
+      .onEntry(this.onEntry.bind(this))
       .onEntryFrom(Trigger.Assigned, (_, owner) => this.setOwner(owner))
       .onEntryFrom(Trigger.Transferred, (_, owner) => this.setOwner(owner))
-      .onActivate(() => this.onActivate.bind(this))
-      .onExit(() => this.onExit.bind(this))
-      .onDeactivate(() => this.onDeactivate.bind(this))
+      .onActivate(this.onActivate.bind(this))
+      .onExit(this.onExit.bind(this))
+      .onDeactivate(this.onDeactivate.bind(this))
       .permitReentry(Trigger.Transferred)
       .permit(Trigger.Released, State.Available)
       .permit(Trigger.RequestRepair, State.UnderMaintenance)
@@ -93,27 +93,27 @@ export class Asset {
       .permit(Trigger.Lost, State.Unavailable);
 
     this._machine.configure(State.UnderMaintenance)
-      .onEntry(() => this.onEntry.bind(this))
-      .onActivate(() => this.onActivate.bind(this))
-      .onExit(() => this.onExit.bind(this))
-      .onDeactivate(() => this.onDeactivate.bind(this))
+      .onEntry(this.onEntry.bind(this))
+      .onActivate(this.onActivate.bind(this))
+      .onExit(this.onExit.bind(this))
+      .onDeactivate(this.onDeactivate.bind(this))
       .permit(Trigger.Repaired, State.Allocated)
       .permit(Trigger.Lost, State.Unavailable)
       .permit(Trigger.Discarded, State.Decommissioned);
 
     this._machine.configure(State.Unavailable)
-      .onEntry(() => this.onEntry.bind(this))
-      .onActivate(() => this.onActivate.bind(this))
-      .onExit(() => this.onExit.bind(this))
-      .onDeactivate(() => this.onDeactivate.bind(this))
+      .onEntry(this.onEntry.bind(this))
+      .onActivate(this.onActivate.bind(this))
+      .onExit(this.onExit.bind(this))
+      .onDeactivate(this.onDeactivate.bind(this))
       .permitIf(Trigger.Found, State.Available, () => this._previousState !== State.New)
       .permitIf(Trigger.Found, State.New, () => this._previousState === State.New);
 
     this._machine.configure(State.Decommissioned)
-      .onEntry(() => this.pocessDecommission.bind(this))
-      .onActivate(() => this.onActivate.bind(this))
-      .onExit(() => this.onExit.bind(this))
-      .onDeactivate(() => this.onDeactivate.bind(this));
+      .onEntry(this.pocessDecommission.bind(this))
+      .onActivate(this.onActivate.bind(this))
+      .onExit(this.onExit.bind(this))
+      .onDeactivate(this.onDeactivate.bind(this));
 
     this._assetData = data;
   }
@@ -217,7 +217,7 @@ export class Asset {
   }
 
   public getDOTGraph(): string {
-    return UmlDotGraph.format(this._machine.getInfo());
+    return UmlDotGraph.format(this._machine.getInfo(), true);
   }
 
   public get isSuccessful(): boolean {
