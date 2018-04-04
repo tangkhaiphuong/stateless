@@ -68,15 +68,17 @@ export class StateConfiguration<TState, TTrigger> {
    * 
    * @param {TTrigger} trigger 
    * @param {((((...args: any[]) => boolean | Promise<boolean>)))} guard 
-   * @param {((transition: Transition<TState, TTrigger>) => void)} internalAction 
+   * @param {((transition: Transition<TState, TTrigger>, ...args: any[]) => void)} internalAction 
+   * @param {(string | null)} [description=null] 
    * @returns {StateConfiguration<TState, TTrigger>} 
    * @memberof StateConfiguration
    */
   public internalTransitionIf(
     trigger: TTrigger,
     guard: (((...args: any[]) => boolean | Promise<boolean>)),
-    internalAction: ((transition: Transition<TState, TTrigger>, ...args: any[]) => void)): StateConfiguration<TState, TTrigger> {
-    this._representation.addTriggerBehaviour(new InternalTriggerBehaviour<TState, TTrigger>(trigger, guard));
+    internalAction: ((transition: Transition<TState, TTrigger>, ...args: any[]) => void),
+    description: string | null = null): StateConfiguration<TState, TTrigger> {
+    this._representation.addTriggerBehaviour(new InternalTriggerBehaviour<TState, TTrigger>(trigger, guard, description));
     this._representation.addInternalAction(trigger, (t, args) => internalAction(t, ...args));
     return this;
   }
@@ -85,14 +87,17 @@ export class StateConfiguration<TState, TTrigger> {
    * Add an internal transition to the state machine. An internal action does not cause the Exit and Entry actions to be triggered, and does not change the state of the state machine
    * 
    * @param {TTrigger} trigger 
-   * @param {((transition: Transition<TState, TTrigger>) => void)} entryAction 
+   * @param {((transition: Transition<TState, TTrigger>, ...args: any[]) => void)} entryAction 
+   * @param {(string | null)} [description=null] 
    * @returns {StateConfiguration<TState, TTrigger>} 
    * @memberof StateConfiguration
    */
+  
   public internalTransition(
     trigger: TTrigger,
-    entryAction: ((transition: Transition<TState, TTrigger>, ...args: any[]) => void)): StateConfiguration<TState, TTrigger> {
-    return this.internalTransitionIf(trigger, () => true, entryAction);
+    entryAction: ((transition: Transition<TState, TTrigger>, ...args: any[]) => void),
+    description: string | null = null): StateConfiguration<TState, TTrigger> {
+    return this.internalTransitionIf(trigger, () => true, entryAction, description);
   }
 
   /**
@@ -185,8 +190,8 @@ export class StateConfiguration<TState, TTrigger> {
    * @param {TTrigger} trigger The trigger to ignore.
    * @param {TState} state The state to ignore.
    * @param {(Array<{ guard: ((...args: any[]) => boolean | Promise<boolean>), description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>)> | ((...args: any[]) => boolean | Promise<boolean>))} guards Functions and their descriptions that must return true in order for the trigger to be ignored.
-   * @param {(string | null)} [description=null] The receiver.
-   * @returns {StateConfiguration<TState, TTrigger>} 
+   * @param {(string | null)} [description=null] Description.
+   * @returns {StateConfiguration<TState, TTrigger>} The receiver.
    * @memberof StateConfiguration
    */
   public ignoreIf(

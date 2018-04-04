@@ -1,6 +1,7 @@
-import { StateMachine, UmlDotGraph } from '../../src';
+import { StateMachine } from '../../src';
 import { AssetInformation } from './asset-information';
 import { Person } from './person';
+import { UmlDotGraph } from '../../src/graph/uml-dot-graph';
 
 export enum State {
   New = 'New',

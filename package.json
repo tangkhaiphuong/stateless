@@ -1,6 +1,6 @@
 {
   "name": "stateless",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Finite State Machine porting from Stateless C#",
   "main": "index.js",
   "types": "index.d.ts",
@@ -18,7 +18,7 @@
     "workflow",
     "fsm",
     "state chart",
-    "state diargram"
+    "state diagram"
   ],
   "author": "Tang Khai Phuong",
   "license": "MIT",
@@ -30,18 +30,18 @@
     "@types/gulp": "4.0.5",
     "@types/gulp-filter": "3.0.32",
     "@types/merge2": "1.1.4",
-    "@types/node": "9.6.0",
+    "@types/node": "9.6.2",
     "gulp": "3.9.1",
     "gulp-file": "0.4.0",
     "gulp-filter": "5.1.0",
     "gulp-tsc": "1.3.2",
     "gulp-tslint": "8.1.3",
-    "gulp-typescript": "4.0.1",
+    "gulp-typescript": "4.0.2",
     "merge2": "1.2.1",
     "run-sequence": "2.2.1",
     "ts-gulp-tasks": "1.0.2",
     "ts-node": "5.0.1",
     "tslint": "5.9.1",
-    "typescript": "2.7.2"
+    "typescript": "2.8.1"
   }
 }

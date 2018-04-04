@@ -47,7 +47,7 @@ export class GulpFile {
   }
 
   private static copyAssets(): NodeJS.ReadableStream {
-    return gulp.src('README.md').pipe(gulp.dest(this.buildDestination));
+    return gulp.src(['README.md', 'LICENSE']).pipe(gulp.dest(this.buildDestination));
   }
 
   private static compileSourceBasePattern(pattern: string | string[] | gulpFilter.FileFunction): NodeJS.ReadableStream {

@@ -3,7 +3,7 @@ import { SuperState } from './super-state';
 import { State } from './state';
 
 function htmlEntities(unsafe: string) {
-  return unsafe.replace(/[<>&'"\$\{\}]/g, function (c): string {
+  return unsafe.replace(/[<>&'"\$\{\}\r\n]/g, function (c): string {
     switch (c) {
       case '<': return '&lt;';
       case '>': return '&gt;';
@@ -11,6 +11,8 @@ function htmlEntities(unsafe: string) {
       case '\'': return '&apos;';
       case '{': return '\\{';
       case '}': return '\\}';
+      case '\n': return '\\n';
+      case '\r': return '\\r';
       case '$': return '\\$';
       case '"': return '&quot;';
     }
@@ -142,10 +144,10 @@ export class UmlDotGraphStyle<TState> extends GraphStyle<TState> {
    * @memberof UmlDotGraphStyle
    */
   public formatOneDecisionNode(nodeName: string, label: string): string {
-    return nodeName + ' [shape = "diamond", label = "' + label + '"];\n';
+    return nodeName + ' [shape = "diamond", label = "' + htmlEntities(label) + '"];\n';
   }
 
   public formatOneLine(fromNodeName: string, toNodeName: string, label: string) {
-    return `"${fromNodeName}"` + ' -> ' + `"${toNodeName}"` + ' ' + '[style="solid", label="' + label + '"];';
+    return `"${fromNodeName}"` + ' -> ' + `"${toNodeName}"` + ' ' + '[style="solid", label="' + htmlEntities(label) + '"];';
   }
 }

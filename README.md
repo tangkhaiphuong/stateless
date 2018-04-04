@@ -71,7 +71,7 @@ Stateless is designed to be embedded in various application models. For example,
 ```typescript
 const stateMachine = new StateMachine<State, Trigger>({
     accessor: () => this.myState,
-    mutator: state => this.myState = sstate});
+    mutator: state => this.myState = state});
 ```
 
 In this example the state machine will use the `myState` object for state storage.
