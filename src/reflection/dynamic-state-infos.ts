@@ -12,11 +12,12 @@ export class DynamicStateInfos<TState> extends Array<DynamicStateInfo<TState>> {
   /**
    * Add a DynamicStateInfo with less typing
    * 
-   * @param {string} destinationState 
+   * @param {TState} destinationState 
    * @param {string} criterion 
+   * @returns {*} 
    * @memberof DynamicStateInfos
    */
-  public add(destinationState: TState, criterion: string): void {
+  public add(destinationState: TState, criterion: string): any {
     super.push(new DynamicStateInfo<TState>(destinationState, criterion));
   }
 }

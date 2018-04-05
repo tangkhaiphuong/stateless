@@ -14,13 +14,13 @@ export class EntryActionBehaviour<TState, TTrigger> {
 
   /**
    * Creates an instance of EntryActionBehaviour.
-   * @param {(((transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>))} _action 
+   * @param {((transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>)} _action 
    * @param {InvocationInfo} _desscription 
-   * @param {TTrigger} [_trigger] 
+   * @param {(TTrigger | null)} [_trigger=null] 
    * @memberof EntryActionBehaviour
    */
   constructor(
-    private readonly _action: ((transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>),
+    private readonly _action: (transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>,
     private readonly _desscription: InvocationInfo,
     private readonly _trigger: TTrigger | null = null) { }
 

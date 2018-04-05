@@ -6,11 +6,11 @@ import { InvocationInfo } from './reflection/invocation-info';
 export class GuardCondition {
 
   constructor(
-    private readonly _guard: ((...args: any[]) => boolean | Promise<boolean>),
+    private readonly _guard: (...args: any[]) => boolean | Promise<boolean>,
     private readonly _methodDescription: InvocationInfo) {
   }
 
-  public get guard(): ((...args: any[]) => boolean | Promise<boolean>) { return this._guard; }
+  public get guard(): (...args: any[]) => boolean | Promise<boolean> { return this._guard; }
 
   /**
    *  Return the description of the guard method: the caller-defined description if one

@@ -70,7 +70,7 @@ export class StateRepresentation<TState, TTrigger> {
 
   public get underlyingState(): TState { return this._state; }
 
-  public addSubstate(substate: StateRepresentation<TState, TTrigger>): void {
+  public addSubstate(substate: StateRepresentation<TState, TTrigger>): any {
     this._substates.push(substate);
   }
 
@@ -78,7 +78,7 @@ export class StateRepresentation<TState, TTrigger> {
 
   public set superstate(value: StateRepresentation<TState, TTrigger> | null) { this._superstate = value; }
 
-  public addTriggerBehaviour(triggerBehaviour: TriggerBehaviour<TState, TTrigger>): void {
+  public addTriggerBehaviour(triggerBehaviour: TriggerBehaviour<TState, TTrigger>): any {
     let allowed = this._triggerBehaviours.get(triggerBehaviour.trigger);
     if (!allowed) {
       allowed = [];
@@ -87,10 +87,10 @@ export class StateRepresentation<TState, TTrigger> {
     allowed.push(triggerBehaviour);
   }
 
-  public addInternalAction(trigger: TTrigger, action: ((transition: Transition<TState, TTrigger>, args: any[]) => void)): void {
-    this._internalActions.push(new InternalActionBehaviour((t, args) => {
+  public addInternalAction(trigger: TTrigger, action: (transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>): any {
+    this._internalActions.push(new InternalActionBehaviour( (t, args) => {
       if (t.trigger === trigger) {
-        action(t, args);
+        return action(t, args);
       }
     }));
   }
@@ -158,7 +158,7 @@ export class StateRepresentation<TState, TTrigger> {
   private tryFindLocalHandlerResult(
     trigger: TTrigger,
     results: Iterable<TriggerBehaviourResult<TState, TTrigger>>,
-    filter: ((result: TriggerBehaviourResult<TState, TTrigger>) => boolean)): TriggerBehaviourResult<TState, TTrigger> | undefined {
+    filter: (result: TriggerBehaviourResult<TState, TTrigger>) => boolean): TriggerBehaviourResult<TState, TTrigger> | undefined {
 
     let actual: TriggerBehaviourResult<TState, TTrigger> | undefined;
 
@@ -185,13 +185,13 @@ export class StateRepresentation<TState, TTrigger> {
 
   public addEntryAction(
     trigger: TTrigger | null,
-    action: ((transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>),
+    action: (transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>,
     entryActionDescription: InvocationInfo) {
     this._entryActions.push(new EntryActionBehaviour<TState, TTrigger>(action, entryActionDescription, trigger));
   }
 
   public addExitAction(
-    action: ((transition: Transition<TState, TTrigger>) => any | Promise<any>),
+    action: (transition: Transition<TState, TTrigger>) => any | Promise<any>,
     exitActionDescription: InvocationInfo): any {
     this._exitActions.push(new ExitActionBehaviour(action, exitActionDescription));
   }

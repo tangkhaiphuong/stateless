@@ -20,7 +20,7 @@ export class StateMachine<TState, TTrigger> {
 
   private readonly _stateConfiguration: Map<TState, StateRepresentation<TState, TTrigger>> = new Map<TState, StateRepresentation<TState, TTrigger>>();
   private readonly _stateAccessor: () => TState;
-  private readonly _stateMutator: (state: TState) => void;
+  private readonly _stateMutator: (state: TState) => any;
   private _unhandledTriggerAction: UnhandledTriggerAction<TState, TTrigger>;
   private readonly _onTransitionedEvent: OnTransitionedEvent<TState, TTrigger>;
   private readonly _eventQueue: Array<{ trigger: TTrigger; args: any[]; }> = [];
@@ -29,10 +29,10 @@ export class StateMachine<TState, TTrigger> {
 
   /**
    * Creates an instance of StateMachine.
-   * @param {(TState | { stateAccessor: () => TState; stateMutator: (state: TState) => void; })} initialState 
+   * @param {(TState | { stateAccessor: () => TState; stateMutator: (state: TState) => any; })} initialState 
    * @memberof StateMachine
    */
-  constructor(initialState: TState | { accessor: () => TState; mutator: (state: TState) => void; }) {
+  constructor(initialState: TState | { accessor: () => TState; mutator: (state: TState) => any; }) {
     const checkObject = initialState as any;
     if (!!checkObject.accessor || !!checkObject.mutator) {
       this._stateAccessor = checkObject.accessor;
@@ -289,7 +289,7 @@ export class StateMachine<TState, TTrigger> {
    * @param {((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>)} unhandledTriggerAction >An action to call when an unhandled trigger is fired.
    * @memberof StateMachine
    */
-  public onUnhandledTrigger(unhandledTriggerAction: (state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>): void {
+  public onUnhandledTrigger(unhandledTriggerAction: (state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>): any {
     this._unhandledTriggerAction = new UnhandledTriggerAction<TState, TTrigger>(unhandledTriggerAction);
   }
 
@@ -339,10 +339,11 @@ export class StateMachine<TState, TTrigger> {
   /**
    * Registers a callback that will be invoked every time the statemachine transitions from one state into another.
    * 
-   * @param {(((transition: Transition<TState, TTrigger>) => any | Promise<any>))} onTransitionAction The action to execute, accepting the details
+   * @param {((transition: Transition<TState, TTrigger>) => any | Promise<any>)} onTransitionAction The action to execute, accepting the details
+   * @returns {*} 
    * @memberof StateMachine
    */
-  public onTransitioned(onTransitionAction: ((transition: Transition<TState, TTrigger>) => any | Promise<any>)): void {
+  public onTransitioned(onTransitionAction: (transition: Transition<TState, TTrigger>) => any | Promise<any>): any {
     this._onTransitionedEvent.register(onTransitionAction);
   }
 

@@ -18,7 +18,7 @@ export class TransitionGuard {
     return new TransitionGuard();
   }
 
-  constructor(...guards: Array<{ guard: ((...args: any[]) => boolean | Promise<boolean>), description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>)>) {
+  constructor(...guards: Array<{ guard: (...args: any[]) => boolean | Promise<boolean>, description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>)>) {
     for (const item of guards) {
       if (item instanceof Function) {
         this._conditions.push(new GuardCondition(item, InvocationInfo.create(item, null)));

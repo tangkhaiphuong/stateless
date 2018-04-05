@@ -9,11 +9,11 @@ export class InternalTriggerBehaviour<TState, TTrigger> extends TriggerBehaviour
   /**
    * Creates an instance of InternalTriggerBehaviour.
    * @param {TTrigger} trigger 
-   * @param {(((...args: any[]) => boolean | Promise<boolean>))} guard 
+   * @param {((...args: any[]) => boolean | Promise<boolean>)} guard 
    * @param {(string | null)} [description=null] 
    * @memberof InternalTriggerBehaviour
    */
-  constructor(trigger: TTrigger, guard: ((...args: any[]) => boolean | Promise<boolean>), description: string | null = null) {
+  constructor(trigger: TTrigger, guard: (...args: any[]) => boolean | Promise<boolean>, description: string | null = null) {
     super(trigger, new TransitionGuard({ guard: guard, description: description || 'Internal Transition' }));
   }
 

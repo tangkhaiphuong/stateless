@@ -118,9 +118,10 @@ export class StateGraph<TState> {
    * 
    * @private
    * @param {StateMachineInfo<TState>} machineInfo 
+   * @returns {*} 
    * @memberof StateGraph
    */
-  private processOnEntryFrom(machineInfo: StateMachineInfo<TState>): void {
+  private processOnEntryFrom(machineInfo: StateMachineInfo<TState>): any {
     for (const stateInfo of machineInfo.states) {
       const state = this.states.get(stateInfo.underlyingState);
       if (!state) {
@@ -146,9 +147,10 @@ export class StateGraph<TState> {
    * 
    * @private
    * @param {StateMachineInfo<TState>} machineInfo 
+   * @returns {*} 
    * @memberof StateGraph
    */
-  private addTransitions(machineInfo: StateMachineInfo<TState>): void {
+  private addTransitions(machineInfo: StateMachineInfo<TState>): any {
     for (const stateInfo of machineInfo.states) {
       const fromState = this.states.get(stateInfo.underlyingState);
       for (const fix of stateInfo.fixedTransitions) {
@@ -199,9 +201,10 @@ export class StateGraph<TState> {
    * 
    * @private
    * @param {StateMachineInfo<TState>} machineInfo 
+   * @returns {*} 
    * @memberof StateGraph
    */
-  private addSingleStates(machineInfo: StateMachineInfo<TState>): void {
+  private addSingleStates(machineInfo: StateMachineInfo<TState>): any {
     for (const stateInfo of machineInfo.states) {
       if (!this.states.has(stateInfo.underlyingState)) {
         this.states.set(stateInfo.underlyingState, new State(stateInfo));
@@ -213,9 +216,11 @@ export class StateGraph<TState> {
    * Add superstates to the graph (states that have substates)
    * 
    * @private
+   * @param {StateMachineInfo<TState>} machineInfo 
+   * @returns {*} 
    * @memberof StateGraph
    */
-  private addSuperstates(machineInfo: StateMachineInfo<TState>): void {
+  private addSuperstates(machineInfo: StateMachineInfo<TState>): any {
     for (const stateInfo of machineInfo.states) {
       if ([...(stateInfo.substates || [])].length > 0 && !stateInfo.superstate) {
         const state = new SuperState(stateInfo);
@@ -225,7 +230,7 @@ export class StateGraph<TState> {
     }
   }
 
-  private addSubstates(superState: SuperState<TState>, substates: Iterable<StateInfo<TState>>): void {
+  private addSubstates(superState: SuperState<TState>, substates: Iterable<StateInfo<TState>>): any {
     for (const subState of substates) {
       if (this.states.has(subState.underlyingState)) {
         // This shouldn't happen

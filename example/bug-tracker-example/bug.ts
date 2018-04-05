@@ -1,8 +1,19 @@
 import { StateMachine } from '../../src';
 import { UmlDotGraph } from '../../src/graph/uml-dot-graph';
 
-enum State { Open, Assigned, Deferred, Resolved, Closed }
-enum Trigger { Assign, Defer, Resolve, Close }
+enum State {
+  Open = 'Open',
+  Assigned = 'Assigned',
+  Deferred = 'Deferred',
+  Resolved = 'Resolved',
+  Closed = 'Closed'
+}
+enum Trigger {
+  Assign = 'Assign',
+  Defer = 'Defer',
+  Resolve = 'Resolve',
+  Close = 'Close'
+}
 
 /**
  * Bug class definition.
@@ -30,7 +41,7 @@ export class Bug {
 
     this._machine.configure(State.Assigned)
       .substateOf(State.Open)
-      .onEntryFrom(Trigger.Assign, (transition, assignee: string) => this.onAssigned(assignee))
+      .onEntryFrom(Trigger.Assign, (_, assignee: string) => this.onAssigned(assignee))
       .permitReentry(Trigger.Assign)
       .permit(Trigger.Close, State.Closed)
       .permit(Trigger.Defer, State.Deferred)

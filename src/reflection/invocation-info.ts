@@ -7,7 +7,7 @@
  */
 export class InvocationInfo {
 
-  public static create(method: ((...args: any[]) => any), description: string | null): InvocationInfo {
+  public static create(method: (...args: any[]) => any | Promise<any>, description: string | null): InvocationInfo {
     const nameParts = method.name.split(' ');
     const methodName = nameParts[nameParts.length - 1] || method.toString();
     return new InvocationInfo(methodName === 'function () { [native code] }' ? '[Function]' : methodName, description);
