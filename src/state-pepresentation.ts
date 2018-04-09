@@ -88,7 +88,7 @@ export class StateRepresentation<TState, TTrigger> {
   }
 
   public addInternalAction(trigger: TTrigger, action: (transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>): any {
-    this._internalActions.push(new InternalActionBehaviour( (t, args) => {
+    this._internalActions.push(new InternalActionBehaviour<TState, TTrigger>((t: Transition<TState, TTrigger>, args: any[]) => {
       if (t.trigger === trigger) {
         return action(t, args);
       }
@@ -96,8 +96,8 @@ export class StateRepresentation<TState, TTrigger> {
   }
 
   public async activate(): Promise<void> {
-    if (!!this._superstate) {
-      await this._superstate.activate();
+    if (!!this.superstate) {
+      await this.superstate.activate();
     }
 
     if (this._active) { return; }
@@ -114,8 +114,8 @@ export class StateRepresentation<TState, TTrigger> {
     await this.executeDeactivationActions();
     this._active = false;
 
-    if (!!this._superstate) {
-      await this._superstate.deactivate();
+    if (!!this.superstate) {
+      await this.superstate.deactivate();
     }
   }
 
@@ -193,7 +193,7 @@ export class StateRepresentation<TState, TTrigger> {
   public addExitAction(
     action: (transition: Transition<TState, TTrigger>) => any | Promise<any>,
     exitActionDescription: InvocationInfo): any {
-    this._exitActions.push(new ExitActionBehaviour(action, exitActionDescription));
+    this._exitActions.push(new ExitActionBehaviour<TState, TTrigger>(action, exitActionDescription));
   }
 
   public async internalAction(transition: Transition<TState, TTrigger>, args: any[]): Promise<void> {
@@ -211,7 +211,7 @@ export class StateRepresentation<TState, TTrigger> {
         break;
       }
       // Try to look for trigger handlers in superstate (if it exists)
-      aStateRep = aStateRep._superstate;
+      aStateRep = aStateRep.superstate;
     }
 
     // Execute internal transition event handler
@@ -225,8 +225,8 @@ export class StateRepresentation<TState, TTrigger> {
       await this.executeEntryActions(transition, entryArgs);
       await this.executeActivationActions();
     } else if (!this.includes(transition.source)) {
-      if (!!this._superstate) {
-        await this._superstate.enter(transition, entryArgs);
+      if (!!this.superstate) {
+        await this.superstate.enter(transition, entryArgs);
       }
       await this.executeEntryActions(transition, entryArgs);
       await this.executeActivationActions();
@@ -241,9 +241,9 @@ export class StateRepresentation<TState, TTrigger> {
       await this.executeDeactivationActions();
       await this.executeExitActions(transition);
 
-      if (!!this._superstate) {
-        transition = new Transition(this._superstate.underlyingState, transition.destination, transition.trigger);
-        return await this._superstate.exit(transition);
+      if (!!this.superstate) {
+        transition = new Transition(this.superstate.underlyingState, transition.destination, transition.trigger);
+        return await this.superstate.exit(transition);
       }
     }
     return transition;
@@ -284,7 +284,7 @@ export class StateRepresentation<TState, TTrigger> {
   }
 
   public isIncludedIn(state: TState): boolean {
-    return this._state === state || (!!this._superstate && this._superstate.isIncludedIn(state));
+    return this._state === state || (!!this.superstate && this.superstate.isIncludedIn(state));
   }
 
   public get permittedTriggers(): Promise<TTrigger[]> {

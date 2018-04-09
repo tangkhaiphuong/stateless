@@ -29,6 +29,7 @@ This project, as well as the example above, was poring from [Stateless](https://
 
 Most standard state machine constructs are supported:
 
+ * Context support for state machine configure and state context instance. (see: https://github.com/dotnet-state-machine/stateless/issues/232)
  * Generic support for states and triggers of any TypeScript type (numbers, strings, enums, etc.)
  * Hierarchical states
  * Entry/exit events for states
@@ -42,8 +43,43 @@ Some useful extensions are also provided:
  * Reentrant states
  * Export to DOT graph
 
-### Hierarchical States
+### State Machine Configure and State Context instance.
 
+Some situations need reuse state machine configure for optimation. This means state configuration only declare one-time binding with context. Then create many contexts without re-configure again. It helps for the bulk of actions such as HTTP request or business workflow which performance strictly.
+
+```typescript
+import { StateMachine } from 'stateless/context';
+
+class PhoneCall {
+
+    public static StateMachine  = new StateMachine<State, Trigger, PhoneCall>();
+
+    public static initialize() {
+        stateMachine.configure(State.OffHook)
+            .permit(Trigger.CallDialled, State.Ringing);
+            
+        stateMachine.configure(State.Ringing)
+            .permit(Trigger.CallConnected, State.Connected);
+        
+        stateMachine.configure(State.Connected)
+            .onEntry((phonecall) => phonecall.startCallTimer())
+            .onExit((phonecall) => phonecall.stopCallTimer())
+            .permit(Trigger.LeftMessage, State.OffHook)
+            .permit(Trigger.PlacedOnHold, State.OnHold);
+    }
+// ...
+}
+PhoneCall.initialize();
+
+// Create many state context instance without re-configure.
+const phoneCall1 = stateMachine.createStateContext(new PhoneCall(), State.OffHook);
+const phoneCall2 = stateMachine.createStateContext(new PhoneCall(), State.OffHook);
+
+phoneCall1.fire(Trigger.CallDialled);
+phoneCall2.fire(Trigger.CallDialled);
+```
+
+### Hierarchical States
 
 In the example below, the `OnHold` state is a substate of the `Connected` state. This means that an `OnHold` call is still connected.
 

@@ -1,16 +1,21 @@
 import { InvocationInfo } from './reflection/invocation-info';
 
 /**
+ * 
+ * 
+ * @export
+ * @class GuardCondition
+ * @template TContext 
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/GuardCondition.cs
  */
-export class GuardCondition {
+export class GuardCondition<TContext = undefined> {
 
   constructor(
-    private readonly _guard: (...args: any[]) => boolean | Promise<boolean>,
+    private readonly _guard: ((...args: any[]) => boolean | Promise<boolean>) | ((context: TContext, ...args: any[]) => boolean | Promise<boolean>),
     private readonly _methodDescription: InvocationInfo) {
   }
 
-  public get guard(): (...args: any[]) => boolean | Promise<boolean> { return this._guard; }
+  public get guard(): ((...args: any[]) => boolean | Promise<boolean>) | ((context: TContext, ...args: any[]) => boolean | Promise<boolean>) { return this._guard; }
 
   /**
    *  Return the description of the guard method: the caller-defined description if one

@@ -4,19 +4,20 @@ import { InvocationInfo } from './reflection/invocation-info';
  * Since I implement both sync/async with Promise so we don't need implement Sync/Async for this case.
  * 
  * @export
- * @class UnhandledTriggerAction
+ * @class DeactivateActionBehaviour
  * @template TState 
- * @template TTrigger 
+ * @template TContext 
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/DeactivateActionBehaviour.cs
  */
-export class DeactivateActionBehaviour<TState> {
+export class DeactivateActionBehaviour<TState, TContext = undefined> {
   constructor(
     private readonly _state: TState,
-    private readonly _action: () => any | Promise<any>,
+    private _action: (() => any | Promise<any>) | ((context: TContext) => any | Promise<any>),
     private readonly _description: InvocationInfo) { }
 
-  public async execute(): Promise<void> {
-    const result = this._action();
+  public async execute(context?: TContext): Promise<void> {
+    const action = this._action as any;
+    const result = !!context ? action(context) : action();
     if (result instanceof Promise) {
       await result;
     }

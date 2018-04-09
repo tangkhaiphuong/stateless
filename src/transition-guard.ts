@@ -10,15 +10,15 @@ import { InvocationInfo } from './reflection/invocation-info';
  * @template TTrigger
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/TransitionGuard.cs
  */
-export class TransitionGuard {
+export class TransitionGuard<TContext = undefined> {
 
-  private readonly _conditions: GuardCondition[] = [];
+  private readonly _conditions: Array<GuardCondition<TContext>> = [];
 
-  public static get empty(): TransitionGuard {
-    return new TransitionGuard();
+  public static empty<TContext>(): TransitionGuard<TContext> {
+    return new TransitionGuard<TContext>();
   }
 
-  constructor(...guards: Array<{ guard: (...args: any[]) => boolean | Promise<boolean>, description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>)>) {
+  constructor(...guards: Array<{ guard: ((...args: any[]) => boolean | Promise<boolean>) | ((context: TContext, ...args: any[]) => boolean | Promise<boolean>), description?: string | null } | ((...args: any[]) => boolean | Promise<boolean>) | ((context: TContext, ...args: any[]) => boolean | Promise<boolean>)>) {
     for (const item of guards) {
       if (item instanceof Function) {
         this._conditions.push(new GuardCondition(item, InvocationInfo.create(item, null)));
@@ -28,7 +28,7 @@ export class TransitionGuard {
     }
   }
 
-  public get conditions(): GuardCondition[] { return this._conditions; }
+  public get conditions(): Array<GuardCondition<TContext>> { return this._conditions; }
 
   /**
    * guards is the list of the guard functions for all guard conditions for this transition
@@ -43,14 +43,17 @@ export class TransitionGuard {
   /**
    * guardConditionsMet is true if all of the guard functions return true or if there are no guard functions
    * 
+   * @param {any[]} args 
+   * @param {TContext} [context] 
    * @returns {Promise<boolean>} 
    * @memberof TransitionGuard
    */
-  public guardConditionsMet(args: any[]): Promise<boolean> {
+  public guardConditionsMet(args: any[], context?: TContext): Promise<boolean> {
     const implement = async (): Promise<boolean> => {
       for (const item of this.conditions) {
         if (!item.guard) { return false; }
-        const result = item.guard.apply(item, args);
+        const guard = item.guard as any;
+        const result = !!context ? guard.apply(item, [context].concat(args)) : guard.apply(item, args);
         if (result instanceof Promise) {
           const final = await result;
           if (final === false) {
@@ -66,28 +69,31 @@ export class TransitionGuard {
   }
 
   /**
-   *  unmetGuardConditions is a list of the descriptions of all guard conditions whose guard function returns false
+   * unmetGuardConditions is a list of the descriptions of all guard conditions whose guard function returns false
    * 
-   * @returns {(Promise<Array<string | null>>)} 
+   * @param {any[]} args 
+   * @param {TContext} [context] 
+   * @returns {Promise<string[]>} 
    * @memberof TransitionGuard
    */
-  public async unmetGuardConditions(args: any[]): Promise<string[]> {
+  public async unmetGuardConditions(args: any[], context?: TContext): Promise<string[]> {
     const implement = async (): Promise<string[]> => {
 
-      const result: string[] = [];
+      const results: string[] = [];
       for (const item of this.conditions) {
         if (!item.guard) { continue; }
-        const guard = item.guard.apply(item, args);
-        if (guard instanceof Promise) {
-          const final = await guard;
+        const guard = item.guard as any;
+        const result = !!context ? guard.apply(guard, [context].concat(args)) : guard.apply(guard, args);
+        if (result instanceof Promise) {
+          const final = await result;
           if (final === false) {
-            result.push(item.description);
+            results.push(item.description);
           }
-        } else if (guard === false) {
-          result.push(item.description);
+        } else if (result === false) {
+          results.push(item.description);
         }
       }
-      return result;
+      return results;
     };
     return implement();
   }

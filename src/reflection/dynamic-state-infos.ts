@@ -7,7 +7,7 @@ import { DynamicStateInfo } from './dynamic-state-info';
  * @class DynamicStateInfos
  * @extends {Array<DynamicStateInfo>}
  */
-export class DynamicStateInfos<TState> extends Array<DynamicStateInfo<TState>> {
+export class  DynamicStateInfos<TState> extends Array<DynamicStateInfo<TState>> {
 
   /**
    * Add a DynamicStateInfo with less typing

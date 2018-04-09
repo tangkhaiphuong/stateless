@@ -1,39 +1,37 @@
-import { UnhandledTriggerAction } from './unhandled-trigger-action';
-import { OnTransitionedEvent } from './on-transitioned-event';
-import { StateConfiguration } from './state-configuration';
+import * as _ from '../state-context';
+import { Transition } from '../transition';
+import { UnhandledTriggerAction } from '../unhandled-trigger-action';
+import { OnTransitionedEvent } from '../on-transitioned-event';
 import { StateRepresentation } from './state-pepresentation';
-import { StateMachineInfo } from './reflection/state-machine-info';
-import { Transition } from './transition';
-import { StateInfo } from './reflection/state-info';
-import { TransitioningTriggerBehaviour } from './transitioning-trigger-behaviour';
-import { StateContext } from './state-context';
+import { StateMachineInfo } from '../reflection/state-machine-info';
+import { TransitioningTriggerBehaviour } from '../transitioning-trigger-behaviour';
+import { StateInfo } from '../reflection/state-info';
 
 /**
  * Models behaviour as transitions between a finite set of states.
- * 
+ *
  * @export
  * @class StateMachine
  * @template TState The type used to represent the states.
  * @template TTrigger The type used to represent the triggers that cause state transitions.
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/StateMachine.cs
  */
-export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigger> {
+export class StateContext<TState, TTrigger, TContext> extends _.StateContext<TState, TTrigger> {
 
-  private readonly _stateConfiguration: Map<TState, StateRepresentation<TState, TTrigger>> = new Map<TState, StateRepresentation<TState, TTrigger>>();
-  private readonly _stateAccessor: () => TState;
-  private readonly _stateMutator: (state: TState) => any;
+  private readonly _stateAccessor: (context: TContext) => TState;
+  private readonly _stateMutator: (context: TContext, state: TState) => any;
   private _unhandledTriggerAction: UnhandledTriggerAction<TState, TTrigger>;
   private readonly _onTransitionedEvent: OnTransitionedEvent<TState, TTrigger>;
   private readonly _eventQueue: Array<{ trigger: TTrigger; args: any[]; }> = [];
 
   private _firing: boolean = false;
+  private readonly _active: { value: boolean } = { value: false };
 
-  /**
-   * Creates an instance of StateMachine.
-   * @param {(TState | { stateAccessor: () => TState; stateMutator: (state: TState) => any; })} initialState 
-   * @memberof StateMachine
-   */
-  constructor(initialState: TState | { accessor: () => TState; mutator: (state: TState) => any; }) {
+  constructor(
+    private readonly _stateConfiguration: Map<TState, StateRepresentation<TState, TTrigger, TContext>>,
+    private readonly _getRepresentation: (state: TState) => StateRepresentation<TState, TTrigger, TContext>,
+    private readonly context: TContext,
+    initialState: TState | { accessor: (context: TContext) => TState; mutator: (context: TContext, state: TState) => any; }) {
     super();
     const checkObject = initialState as any;
     if (!!checkObject.accessor || !!checkObject.mutator) {
@@ -41,8 +39,8 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
       this._stateMutator = checkObject.mutator;
     } else {
       const stateReference = { state: initialState as TState };
-      this._stateAccessor = function (): TState { return stateReference.state; };
-      this._stateMutator = function (state: TState) { stateReference.state = state; };
+      this._stateAccessor = function (_: TContext): TState { return stateReference.state; };
+      this._stateMutator = function (_: TContext, state: TState) { stateReference.state = state; };
     }
     this._unhandledTriggerAction = new UnhandledTriggerAction(this.defaultUnhandledTriggerAction.bind(this));
     this._onTransitionedEvent = new OnTransitionedEvent();
@@ -54,7 +52,7 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
    * @memberof StateMachine
    */
   public set state(state: TState) {
-    this._stateMutator(state);
+    this._stateMutator(this.context, state);
   }
 
   /**
@@ -64,7 +62,16 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
    * @memberof StateMachine
    */
   public get state(): TState {
-    return this._stateAccessor();
+    return this._stateAccessor(this.context);
+  }
+
+  private defaultUnhandledTriggerAction(state: TState, trigger: TTrigger, unmetGuardConditions: string[]) {
+
+    if (!unmetGuardConditions || unmetGuardConditions.length === 0) {
+      throw new Error(`Trigger '${trigger}' is valid for transition from state '${state}' but a guard conditions are not met. Guard descriptions: '${unmetGuardConditions}'.`);
+    }
+
+    throw new Error(`No valid leaving transitions are permitted from state '${trigger}' for trigger '${state}'. Consider ignoring the trigger.`);
   }
 
   /**
@@ -86,7 +93,7 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
    * @memberof StateMachine
    */
   public getPermittedTriggers(...args: any[]): Promise<TTrigger[]> {
-    return this.currentRepresentation.getPermittedTriggers(args);
+    return this.currentRepresentation.getPermittedTriggers(this.context, args);
   }
 
   /**
@@ -96,87 +103,8 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
    * @type {StateRepresentation<TState, TTrigger>}
    * @memberof StateMachine
    */
-  private get currentRepresentation(): StateRepresentation<TState, TTrigger> {
-    return this.getRepresentation(this.state);
-  }
-
-  /**
-   * Provides an info object which exposes the states, transitions, and actions of this machine.
-   * 
-   * @param {string} stateType 
-   * @param {string} triggerType 
-   * @returns {StateMachineInfo<TState>} 
-   * @memberof StateMachine
-   */
-  public getInfo(
-    stateType: string = 'State',
-    triggerType: string = 'Trigger'): StateMachineInfo<TState> {
-
-    const representations = new Map<TState, StateRepresentation<TState, TTrigger>>(this._stateConfiguration);
-
-    const except: Set<TState> = new Set<TState>(representations.keys());
-
-    const destinations: Set<TState> = new Set<TState>();
-
-    for (const kvp of this._stateConfiguration) {
-      for (const behaviours of kvp['1'].triggerBehaviours.values()) {
-        for (const item of behaviours) {
-          if (item instanceof TransitioningTriggerBehaviour) {
-            destinations.add(item.destination);
-          }
-        }
-      }
-    }
-    const reachable: Array<StateRepresentation<TState, TTrigger>> = [];
-    for (const underlying of destinations) {
-      if (except.has(underlying)) {
-        continue;
-      }
-      reachable.push(new StateRepresentation<TState, TTrigger>(underlying));
-    }
-
-    for (const representation of reachable) {
-      representations.set(representation.underlyingState, representation);
-    }
-
-    const state = this.state;
-    const info = new Map<TState, StateInfo<TState>>();
-    for (const item of representations) {
-      info.set(item[0], StateInfo.createStateInfo<TState, TTrigger>(item[1], state === item[1].underlyingState));
-    }
-
-    for (const state of info) {
-      const stateRepresentation = representations.get(state[0]);
-      if (!stateRepresentation) { continue; }
-      StateInfo.addRelationships(state[1], stateRepresentation, (k: TState) => {
-        const result = info.get(k);
-        if (!result) { throw new Error('Cannot lookup state'); }
-        return result;
-      });
-    }
-
-    return new StateMachineInfo<TState>([...(info.values() || [])], stateType, triggerType);
-  }
-
-  private getRepresentation(state: TState): StateRepresentation<TState, TTrigger> {
-    let result = this._stateConfiguration.get(state);
-    if (!result) {
-      result = new StateRepresentation<TState, TTrigger>(state);
-      this._stateConfiguration.set(state, result);
-    }
-    return result;
-  }
-
-  /**
-   * Begin configuration of the entry/exit actions and allowed transitions
-   * when the state machine is in a particular state.
-   * 
-   * @param {TState} state The state to configure.
-   * @returns {StateConfiguration<TState, TTrigger>} >A configuration object through which the state can be configured.
-   * @memberof StateMachine
-   */
-  public configure(state: TState): StateConfiguration<TState, TTrigger> {
-    return new StateConfiguration<TState, TTrigger>(this, this.getRepresentation(state), this.getRepresentation.bind(this));
+  private get currentRepresentation(): StateRepresentation<TState, TTrigger, TContext> {
+    return this._getRepresentation(this.state);
   }
 
   /**
@@ -203,8 +131,8 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
    * @memberof StateMachine
    */
   public async activate(): Promise<void> {
-    const representativeState = this.getRepresentation(this.state);
-    await representativeState.activate();
+    const representativeState = this._getRepresentation(this.state);
+    await representativeState.activate(this.context, this._active);
   }
 
   /**
@@ -216,8 +144,8 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
    * @memberof StateMachine
    */
   public async deactivate(): Promise<void> {
-    const representativeState = this.getRepresentation(this.state);
-    await representativeState.deactivate();
+    const representativeState = this._getRepresentation(this.state);
+    await representativeState.deactivate(this.context, this._active);
   }
 
   /**
@@ -256,9 +184,9 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
   private async internalFireOne(trigger: TTrigger, args: any[]): Promise<void> {
 
     const source = this.state;
-    const representativeState = this.getRepresentation(source);
+    const representativeState = this._getRepresentation(source);
 
-    const [result, handler] = await representativeState.tryFindHandler(trigger, args);
+    const [result, handler] = await representativeState.tryFindHandler(this.context, trigger, args);
     if (!result || !handler) {
       await this._unhandledTriggerAction.execute(representativeState.underlyingState, trigger, !!handler ? handler.unmetGuardConditions : []);
       return;
@@ -269,19 +197,19 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
 
       let transition = new Transition<TState, TTrigger>(source, destination, trigger);
 
-      transition = await representativeState.exit(transition);
+      transition = await representativeState.exit(this.context, transition);
 
       this.state = transition.destination;
-      const newRepresentation = this.getRepresentation(transition.destination);
+      const newRepresentation = this._getRepresentation(transition.destination);
       this._onTransitionedEvent.invoke(transition);
 
-      await newRepresentation.enter(transition, args);
+      await newRepresentation.enter(this.context, transition, args);
 
     } else {
 
       const transition = new Transition<TState, TTrigger>(source, destination, trigger);
 
-      await this.currentRepresentation.internalAction(transition, args);
+      await this.currentRepresentation.internalAction(this.context, transition, args);
     }
   }
 
@@ -314,26 +242,7 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
    * @memberof StateMachine
    */
   public canFire(trigger: TTrigger): Promise<boolean> {
-    return this.currentRepresentation.canHandle(trigger);
-  }
-
-  /**
-   *  A human-readable representation of the state machine.
-   * 
-   * @returns {string} A description of the current state and permitted triggers.
-   * @memberof StateMachine
-   */
-  public async toString(): Promise<string> {
-    return `StateMachine { state = ${this.state}, permittedTriggers = { ${(await this.permittedTriggers).join(', ')} }}`;
-  }
-
-  private defaultUnhandledTriggerAction(state: TState, trigger: TTrigger, unmetGuardConditions: string[]) {
-
-    if (!unmetGuardConditions || unmetGuardConditions.length === 0) {
-      throw new Error(`Trigger '${trigger}' is valid for transition from state '${state}' but a guard conditions are not met. Guard descriptions: '${unmetGuardConditions}'.`);
-    }
-
-    throw new Error(`No valid leaving transitions are permitted from state '${trigger}' for trigger '${state}'. Consider ignoring the trigger.`);
+    return this.currentRepresentation.canHandle(this.context, trigger);
   }
 
   /**
@@ -347,4 +256,61 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
     this._onTransitionedEvent.register(onTransitionAction);
   }
 
+  /**
+   * Provides an info object which exposes the states, transitions, and actions of this machine.
+   * 
+   * @param {string} stateType 
+   * @param {string} triggerType 
+   * @returns {StateMachineInfo<TState>} 
+   * @memberof StateMachine
+   */
+  public getInfo(
+    stateType: string = 'State',
+    triggerType: string = 'Trigger'): StateMachineInfo<TState> {
+
+    const representations = new Map<TState, StateRepresentation<TState, TTrigger, TContext>>(this._stateConfiguration);
+
+    const except: Set<TState> = new Set<TState>(representations.keys());
+
+    const destinations: Set<TState> = new Set<TState>();
+
+    for (const kvp of this._stateConfiguration) {
+      for (const behaviours of kvp['1'].triggerBehaviours.values()) {
+        for (const item of behaviours) {
+          if (item instanceof TransitioningTriggerBehaviour) {
+            destinations.add(item.destination);
+          }
+        }
+      }
+    }
+    const reachable: Array<StateRepresentation<TState, TTrigger, TContext>> = [];
+    for (const underlying of destinations) {
+      if (except.has(underlying)) {
+        continue;
+      }
+      reachable.push(new StateRepresentation<TState, TTrigger, TContext>(underlying));
+    }
+
+    for (const representation of reachable) {
+      representations.set(representation.underlyingState, representation);
+    }
+
+    const state = this.state;
+    const info = new Map<TState, StateInfo<TState>>();
+    for (const item of representations) {
+      info.set(item[0], StateInfo.createStateInfo<TState, TTrigger>(item[1] as any, state === item[1].underlyingState));
+    }
+
+    for (const state of info) {
+      const stateRepresentation = representations.get(state[0]);
+      if (!stateRepresentation) { continue; }
+      StateInfo.addRelationships(state[1], stateRepresentation as any, (k: TState) => {
+        const result = info.get(k);
+        if (!result) { throw new Error('Cannot lookup state'); }
+        return result;
+      });
+    }
+
+    return new StateMachineInfo<TState>([...(info.values() || [])], stateType, triggerType);
+  }
 }

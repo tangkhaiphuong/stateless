@@ -10,9 +10,9 @@ import { TransitionGuard } from './transition-guard';
  * @template TTrigger 
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/TriggerBehaviour.cs
  */
-export abstract class TriggerBehaviour<TState, TTrigger> {
+export abstract class TriggerBehaviour<TState, TTrigger, TContext = undefined> {
 
-  private readonly _guard: TransitionGuard;
+  private readonly _guard: TransitionGuard<TContext>;
 
   /**
    * Creates an instance of TriggerBehaviour.
@@ -22,8 +22,8 @@ export abstract class TriggerBehaviour<TState, TTrigger> {
    */
   constructor(
     private readonly _trigger: TTrigger,
-    guard: TransitionGuard | null) {
-    this._guard = guard || TransitionGuard.empty;
+    guard: TransitionGuard<TContext> | null) {
+    this._guard = guard || TransitionGuard.empty<TContext>();
     // If there is no guard function, _guard is set to TransitionGuard.empty
   }
 
@@ -36,7 +36,7 @@ export abstract class TriggerBehaviour<TState, TTrigger> {
    * @type {TransitionGuard}
    * @memberof TriggerBehaviour
    */
-  public get guard(): TransitionGuard { return this._guard; }
+  public get guard(): TransitionGuard<TContext> { return this._guard; }
 
   /**
    * Guards is the list of guard functions for the transition guard for this trigger
@@ -51,19 +51,23 @@ export abstract class TriggerBehaviour<TState, TTrigger> {
   /**
    * GuardConditionsMet is true if all of the guard functions return true or if there are no guard functions
    * 
-   * @readonly
-   * @type {boolean}
+   * @param {any[]} args 
+   * @param {TContext} [context] 
+   * @returns {Promise<boolean>} 
    * @memberof TriggerBehaviour
    */
-  public guardConditionsMet(args: any[]): Promise<boolean> { return this._guard.guardConditionsMet(args); }
+  public guardConditionsMet(args: any[], context?: TContext): Promise<boolean> { return this._guard.guardConditionsMet(args, context); }
 
   /**
    * UnmetGuardConditions is a list of the descriptions of all guard conditionswhose guard function returns false
    * 
-   * @template string 
+   * 
+   * @param {any[]} args 
+   * @param {TContext} [context] 
+   * @returns {Promise<string[]>} 
    * @memberof TriggerBehaviour
    */
-  public unmetGuardConditions(args: any[]): Promise<string[]> { return this._guard.unmetGuardConditions(args); }
+  public unmetGuardConditions(args: any[], context?: TContext): Promise<string[]> { return this._guard.unmetGuardConditions(args, context); }
 
   public abstract resultsInTransitionFrom(source: TState, args: any[]): Promise<[boolean, TState]>;
 }

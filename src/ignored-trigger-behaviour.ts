@@ -4,7 +4,7 @@ import { TransitionGuard } from './transition-guard';
 /**
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/InternalTriggerBehaviour.cs
  */
-export class IgnoredTriggerBehaviour<TState, TTrigger> extends TriggerBehaviour<TState, TTrigger>  {
+export class IgnoredTriggerBehaviour<TState, TTrigger, TContext = undefined> extends TriggerBehaviour<TState, TTrigger, TContext>  {
 
   /**
    * Creates an instance of IgnoredTriggerBehaviour.
@@ -16,11 +16,11 @@ export class IgnoredTriggerBehaviour<TState, TTrigger> extends TriggerBehaviour<
   constructor(
     private readonly _destination: TState,
     trigger: TTrigger,
-    guard: TransitionGuard | null = null) {
+    guard: TransitionGuard<TContext> | null = null) {
     super(trigger, guard);
   }
 
-  public resultsInTransitionFrom(_source: TState, _args: any[]): Promise<[boolean, TState]> {
+  public resultsInTransitionFrom(_source: TState, _args: any[], _context?: TContext): Promise<[boolean, TState]> {
     const result: [boolean, TState] = [false, this._destination];
     return Promise.resolve(result);
   }
