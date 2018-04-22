@@ -1,6 +1,6 @@
 import { TriggerBehaviour } from './trigger-behaviour';
 import { Transition } from './transition';
-import { InternalActionBehaviour } from './internal-action-behaviour';
+import { InternalTriggerBehaviour } from './internal-trigger-behaviour';
 import { TriggerBehaviourResult } from './trigger-behaviour-result';
 import { EntryActionBehaviour } from './entry-action-behaviour';
 import { ExitActionBehaviour } from './exit-action-behaviour';
@@ -27,8 +27,6 @@ export class StateRepresentation<TState, TTrigger> {
   private readonly _activateActions: Array<ActivateActionBehaviour<TState>> = [];
 
   private readonly _deactivateActions: Array<DeactivateActionBehaviour<TState>> = [];
-
-  private readonly _internalActions: Array<InternalActionBehaviour<TState, TTrigger>> = [];
 
   private _active: boolean = false;
 
@@ -87,14 +85,6 @@ export class StateRepresentation<TState, TTrigger> {
     allowed.push(triggerBehaviour);
   }
 
-  public addInternalAction(trigger: TTrigger, action: (transition: Transition<TState, TTrigger>, args: any[]) => any | Promise<any>): any {
-    this._internalActions.push(new InternalActionBehaviour<TState, TTrigger>((t: Transition<TState, TTrigger>, args: any[]) => {
-      if (t.trigger === trigger) {
-        return action(t, args);
-      }
-    }));
-  }
-
   public async activate(): Promise<void> {
     if (!!this.superstate) {
       await this.superstate.activate();
@@ -134,15 +124,19 @@ export class StateRepresentation<TState, TTrigger> {
   private async tryFindLocalHandler(trigger: TTrigger, args: any[])
     : Promise<[boolean, TriggerBehaviourResult<TState, TTrigger> | undefined]> {
 
+    // Get list of candidate trigger handlers
     const handler = this._triggerBehaviours.get(trigger);
 
     if (!handler) { return [false, undefined]; }
 
-    // Guard functions executed
+    // Remove those that have unmet guard conditions
+    // Guard functions are executed here
     const actual: Array<TriggerBehaviourResult<TState, TTrigger>> = [];
     for (const item of handler) {
       const condition = await item.unmetGuardConditions(args);
-      actual.push(new TriggerBehaviourResult(item, condition));
+      if (condition.length === 0) {
+        actual.push(new TriggerBehaviourResult(item, condition));
+      }
     }
 
     const handlerResult = this.tryFindLocalHandlerResult(trigger, actual, r => r.unmetGuardConditions.length === 0)
@@ -197,17 +191,16 @@ export class StateRepresentation<TState, TTrigger> {
   }
 
   public async internalAction(transition: Transition<TState, TTrigger>, args: any[]): Promise<void> {
-    const possibleActions: Array<InternalActionBehaviour<TState, TTrigger>> = [];
+
+    let internalTransition: InternalTriggerBehaviour<TState, TTrigger> | undefined;
 
     // Look for actions in superstate(s) recursivly until we hit the topmost superstate, or we actually find some trigger handlers.
     let aStateRep: StateRepresentation<TState, TTrigger> | null = this;
     while (aStateRep !== null) {
-      const [result] = await aStateRep.tryFindLocalHandler(transition.trigger, args);
-      if (result) {
-        // Trigger handler(s) found in this state
-        for (const item of aStateRep._internalActions) {
-          possibleActions.push(item);
-        }
+      const [result, handler] = await aStateRep.tryFindLocalHandler(transition.trigger, args);
+      if (result && !!handler) {
+
+        internalTransition = handler.handler as InternalTriggerBehaviour<TState, TTrigger>;
         break;
       }
       // Try to look for trigger handlers in superstate (if it exists)
@@ -215,8 +208,8 @@ export class StateRepresentation<TState, TTrigger> {
     }
 
     // Execute internal transition event handler
-    for (const action of possibleActions) {
-      await action.execute(transition, args);
+    if (!!internalTransition) {
+      internalTransition.execute(transition, args);
     }
   }
 

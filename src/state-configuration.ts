@@ -69,7 +69,7 @@ export class StateConfiguration<TState, TTrigger> {
    * @param {TTrigger} trigger 
    * @param {((...args: any[]) => boolean | Promise<boolean>)} guard 
    * @param {((transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>)} internalAction 
-   * @param {(string | null)} [description=null] 
+   * @param {(string | null)} [guardDescription=null] A description of the guard condition
    * @returns {StateConfiguration<TState, TTrigger>} 
    * @memberof StateConfiguration
    */
@@ -77,9 +77,9 @@ export class StateConfiguration<TState, TTrigger> {
     trigger: TTrigger,
     guard: (...args: any[]) => boolean | Promise<boolean>,
     internalAction: (transition: Transition<TState, TTrigger>, ...args: any[]) => any | Promise<any>,
-    description: string | null = null): StateConfiguration<TState, TTrigger> {
-    this._representation.addTriggerBehaviour(new InternalTriggerBehaviour<TState, TTrigger>(trigger, guard, description));
-    this._representation.addInternalAction(trigger, (t, args) => internalAction(t, ...args));
+    guardDescription: string | null = null): StateConfiguration<TState, TTrigger> {
+    this._representation.addTriggerBehaviour(
+      new InternalTriggerBehaviour<TState, TTrigger>(trigger, guard, (_, t, args) => internalAction(t, args), guardDescription));
     return this;
   }
 

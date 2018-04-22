@@ -201,7 +201,7 @@ export class StateContext<TState, TTrigger, TContext> extends _.StateContext<TSt
 
       this.state = transition.destination;
       const newRepresentation = this._getRepresentation(transition.destination);
-      this._onTransitionedEvent.invoke(transition);
+      this._onTransitionedEvent.invoke(new Transition(source, destination, trigger));
 
       await newRepresentation.enter(this.context, transition, args);
 

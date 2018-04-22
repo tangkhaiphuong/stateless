@@ -15,13 +15,15 @@ export class TransitioningTriggerBehaviour<TState, TTrigger, TContext = undefine
 
   /**
    * Creates an instance of TransitioningTriggerBehaviour.
-   * @param {TTrigger} _trigger 
+   * @param {TTrigger} trigger 
    * @param {TState} _destination 
    * @param {(TransitionGuard<TContext> | null)} [_transitionGuard=null] 
    * @memberof TransitioningTriggerBehaviour
    */
-  constructor(_trigger: TTrigger, private readonly _destination: TState, _transitionGuard: TransitionGuard<TContext> | null = null) {
-    super(_trigger, _transitionGuard);
+  constructor(
+    trigger: TTrigger,
+    private readonly _destination: TState, _transitionGuard: TransitionGuard<TContext> | null = null) {
+    super(trigger, _transitionGuard);
   }
 
   public get destination(): TState {

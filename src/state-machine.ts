@@ -273,7 +273,7 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
 
       this.state = transition.destination;
       const newRepresentation = this.getRepresentation(transition.destination);
-      this._onTransitionedEvent.invoke(transition);
+      this._onTransitionedEvent.invoke(new Transition(source, destination, trigger));
 
       await newRepresentation.enter(transition, args);
 

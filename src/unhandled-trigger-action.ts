@@ -10,7 +10,9 @@
  */
 export class UnhandledTriggerAction<TState, TTrigger, TContext = undefined> {
 
-  constructor(private readonly _action: ((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>) | ((context: TContext, state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>)) { }
+  constructor(
+    private readonly _action: ((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>) |
+      ((context: TContext, state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>)) { }
 
   public async execute(state: TState, trigger: TTrigger, unmetGuards: string[], context?: TContext): Promise<void> {
     const action = this._action as any;
