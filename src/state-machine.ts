@@ -7,6 +7,7 @@ import { Transition } from './transition';
 import { StateInfo } from './reflection/state-info';
 import { TransitioningTriggerBehaviour } from './transitioning-trigger-behaviour';
 import { StateContext } from './state-context';
+import { FiringMode } from './firing-mode';
 
 /**
  * Models behaviour as transitions between a finite set of states.
@@ -25,15 +26,18 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
   private _unhandledTriggerAction: UnhandledTriggerAction<TState, TTrigger>;
   private readonly _onTransitionedEvent: OnTransitionedEvent<TState, TTrigger>;
   private readonly _eventQueue: Array<{ trigger: TTrigger; args: any[]; }> = [];
-
   private _firing: boolean = false;
+  private readonly _fireHandler: (trigger: TTrigger, args: any[]) => Promise<void>;
 
   /**
    * Creates an instance of StateMachine.
    * @param {(TState | { stateAccessor: () => TState; stateMutator: (state: TState) => any; })} initialState 
    * @memberof StateMachine
    */
-  constructor(initialState: TState | { accessor: () => TState; mutator: (state: TState) => any; }) {
+  constructor(
+    initialState: TState | { accessor: () => TState; mutator: (state: TState) => any; },
+    firingMode: FiringMode = FiringMode.Queued
+  ) {
     super();
     const checkObject = initialState as any;
     if (!!checkObject.accessor || !!checkObject.mutator) {
@@ -46,6 +50,14 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
     }
     this._unhandledTriggerAction = new UnhandledTriggerAction(this.defaultUnhandledTriggerAction.bind(this));
     this._onTransitionedEvent = new OnTransitionedEvent();
+
+    if (firingMode === FiringMode.Queued) {
+      this._fireHandler = this.internalFireQueued;
+    } else if (firingMode === FiringMode.Immediate) {
+      this._fireHandler = this.internalFireOne;
+    } else {
+      this._fireHandler = () => { throw new Error('FireHandler has not been configured!'); };
+    }
   }
 
   /**
@@ -221,8 +233,7 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
   }
 
   /**
-   *  Queue events and then fire in order.
-   * If only one event is queued, this behaves identically to the non-queued version.
+   * Determine how to Fire the trigger
    * 
    * @private
    * @param {TTrigger} trigger The trigger.
@@ -230,7 +241,22 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
    * @returns {Promise<void>} 
    * @memberof StateMachine
    */
-  private async internalFire(trigger: TTrigger, args: any[]): Promise<void> {
+  private internalFire(trigger: TTrigger, args: any[]): Promise<void> {
+    return this._fireHandler(trigger, args);
+  }
+
+  /**
+   * Queue events and then fire in order.
+   * If only one event is queued, this behaves identically to the non-queued version.
+   * 
+   * @private
+   * @param {TTrigger} trigger The trigger.
+   * @param {any[]} args  A variable-length parameters list containing argument
+   * @returns {Promise<void>} 
+   * @memberof StateMachine
+   */
+  private async internalFireQueued(trigger: TTrigger, args: any[]): Promise<void> {
+
     if (this._firing) {
       this._eventQueue.push({ trigger, args });
       return;
@@ -241,6 +267,7 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
 
       await this.internalFireOne(trigger, args);
 
+      // Check if any other triggers have been queued, and fire those as well.
       while (this._eventQueue.length !== 0) {
         const queuedEvent = this._eventQueue.shift();
         if (!!queuedEvent) {
@@ -253,20 +280,33 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
     }
   }
 
+  /**
+   * This method handles the execution of a trigger handler. It finds a handle, then updates the current state information.
+   * 
+   * @private
+   * @param {TTrigger} trigger 
+   * @param {any[]} args 
+   * @returns {Promise<void>} 
+   * @memberof StateMachine
+   */
   private async internalFireOne(trigger: TTrigger, args: any[]): Promise<void> {
 
     const source = this.state;
     const representativeState = this.getRepresentation(source);
 
     const [result, handler] = await representativeState.tryFindHandler(trigger, args);
+
+    // Try to find a trigger handler, either in the current state or a super state.
     if (!result || !handler) {
       await this._unhandledTriggerAction.execute(representativeState.underlyingState, trigger, !!handler ? handler.unmetGuardConditions : []);
       return;
     }
 
+    // Check if it is an internal transition, or a transition from one state to another.
     const [result2, destination] = await handler.handler.resultsInTransitionFrom(source, args);
     if (result2) {
 
+      // Handle transition, and set new state
       let transition = new Transition<TState, TTrigger>(source, destination, trigger);
 
       transition = await representativeState.exit(transition);
@@ -279,6 +319,7 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
 
     } else {
 
+      // Internal transitions does not update the current state, but must execute the associated action.
       const transition = new Transition<TState, TTrigger>(source, destination, trigger);
 
       await this.currentRepresentation.internalAction(transition, args);

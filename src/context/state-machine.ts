@@ -4,6 +4,7 @@ import { StateMachineInfo } from '../reflection/state-machine-info';
 import { StateInfo } from '../reflection/state-info';
 import { TransitioningTriggerBehaviour } from '../transitioning-trigger-behaviour';
 import { StateContext } from './state-context';
+import { FiringMode } from '../firing-mode';
 
 /**
  * Models behaviour as transitions between a finite set of states.
@@ -106,8 +107,9 @@ export class StateMachine<TState, TTrigger, TContext> {
    */
   public createStateContext(
     context: TContext,
-    initialState: TState | { accessor: (context: TContext) => TState; mutator: (context: TContext, state: TState) => any; }
+    initialState: TState | { accessor: (context: TContext) => TState; mutator: (context: TContext, state: TState) => any; },
+    firingMode: FiringMode = FiringMode.Queued
   ): StateContext<TState, TTrigger, TContext> {
-    return new StateContext(this._stateConfiguration, this.getRepresentation.bind(this), context, initialState);
+    return new StateContext(this._stateConfiguration, this.getRepresentation.bind(this), context, initialState, firingMode);
   }
 }

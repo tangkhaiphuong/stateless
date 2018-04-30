@@ -1,6 +1,6 @@
 {
   "name": "stateless",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Finite State Machine porting from Stateless C#",
   "main": "index.js",
   "types": "index.d.ts",
