@@ -8,6 +8,10 @@ import { StateInfo } from './reflection/state-info';
 import { TransitioningTriggerBehaviour } from './transitioning-trigger-behaviour';
 import { StateContext } from './state-context';
 import { FiringMode } from './firing-mode';
+import { IgnoredTriggerBehaviour } from './ignored-trigger-behaviour';
+import { ReentryTriggerBehaviour } from './reentry-trigger-behaviour';
+import { DynamicTriggerBehaviour } from './dynamic-trigger-behaviour';
+import { InternalTriggerBehaviour } from './internal-trigger-behaviour';
 
 /**
  * Models behaviour as transitions between a finite set of states.
@@ -135,10 +139,13 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
         for (const item of behaviours) {
           if (item instanceof TransitioningTriggerBehaviour) {
             destinations.add(item.destination);
+          } else if (item instanceof ReentryTriggerBehaviour) {
+            destinations.add(item.destination);
           }
         }
       }
     }
+
     const reachable: Array<StateRepresentation<TState, TTrigger>> = [];
     for (const underlying of destinations) {
       if (except.has(underlying)) {
@@ -294,45 +301,93 @@ export class StateMachine<TState, TTrigger> extends StateContext<TState, TTrigge
     const source = this.state;
     const representativeState = this.getRepresentation(source);
 
-    const [result, handler] = await representativeState.tryFindHandler(trigger, args);
+    const [result, handlerResult] = await representativeState.tryFindHandler(trigger, args);
 
     // Try to find a trigger handler, either in the current state or a super state.
-    if (!result || !handler) {
-      await this._unhandledTriggerAction.execute(representativeState.underlyingState, trigger, !!handler ? handler.unmetGuardConditions : []);
+    if (!result || !handlerResult) {
+      await this._unhandledTriggerAction.execute(representativeState.underlyingState, trigger, !!handlerResult ? handlerResult.unmetGuardConditions : []);
       return;
     }
 
-    // Check if it is an internal transition, or a transition from one state to another.
-    const [result2, destination] = await handler.handler.resultsInTransitionFrom(source, args);
-    if (result2) {
+    const handler = handlerResult.handler;
 
+    // Check if this trigger should be ignored
+    if (handler instanceof IgnoredTriggerBehaviour) {
+
+    } else if (handler instanceof ReentryTriggerBehaviour) {
+      // Handle special case, re-entry in superstate
+      // Check if it is an internal transition, or a transition from one state to another.
       // Handle transition, and set new state
-      let transition = new Transition<TState, TTrigger>(source, destination, trigger);
-
-      transition = await representativeState.exit(transition);
-
-      this.state = transition.destination;
-      const newRepresentation = this.getRepresentation(transition.destination);
-      this._onTransitionedEvent.invoke(new Transition(source, destination, trigger));
-
-      await newRepresentation.enter(transition, args);
-
-    } else {
-
+      const transition = new Transition(source, handler.destination, trigger);
+      await this.handleReentryTrigger(args, representativeState, transition);
+    } else if (handler instanceof DynamicTriggerBehaviour ||
+      handler instanceof TransitioningTriggerBehaviour) {
+      const [result, destination] = await handler.resultsInTransitionFrom(source, args);
+      if (result) {
+        // Handle transition, and set new state
+        const transition = new Transition(source, destination, trigger);
+        await this.handleTransitioningTrigger(args, representativeState, transition);
+      }
+    } else if (handler instanceof InternalTriggerBehaviour) {
       // Internal transitions does not update the current state, but must execute the associated action.
-      const transition = new Transition<TState, TTrigger>(source, destination, trigger);
-
+      const transition = new Transition(source, source, trigger);
       await this.currentRepresentation.internalAction(transition, args);
+    } else {
+      throw new Error('State machine configuration incorrect, no handler for trigger.');
+    }
+  }
+
+  private async handleReentryTrigger(args: any[], representativeState: StateRepresentation<TState, TTrigger>, transition: Transition<TState, TTrigger>): Promise<void> {
+    transition = await representativeState.exit(transition);
+    this.state = transition.destination;
+    const newRepresentation = this.getRepresentation(transition.destination);
+
+    if (transition.source !== transition.destination) {
+      // Then Exit the final superstate
+      transition = new Transition(transition.destination, transition.destination, transition.trigger);
+      await newRepresentation.exit(transition);
+    }
+
+    await this._onTransitionedEvent.invoke(transition);
+
+    await newRepresentation.enter(transition, args);
+  }
+
+  private async handleTransitioningTrigger(args: any[], representativeState: StateRepresentation<TState, TTrigger>, transition: Transition<TState, TTrigger>): Promise<void> {
+    transition = await representativeState.exit(transition);
+    this.state = transition.destination;
+    let newRepresentation = this.getRepresentation(transition.destination);
+
+    // Check if there is an intital transition configured
+    if (newRepresentation.hasInitialTransition) {
+      // Verify that the target state is a substate
+      if (!newRepresentation.getSubstates().find(s => s.underlyingState === newRepresentation.initialTransitionTarget)) {
+        throw new Error(`The target (${newRepresentation.initialTransitionTarget}) for the initial transition is not a substate.`);
+      }
+
+      // Check if state has substate(s), and if an initial transition(s) has been set up.
+      while (newRepresentation.getSubstates().length > 0 && newRepresentation.hasInitialTransition) {
+        const initialTransition = new Transition(transition.source, newRepresentation.initialTransitionTarget, transition.trigger);
+        newRepresentation = this.getRepresentation(newRepresentation.initialTransitionTarget);
+        await newRepresentation.enter(initialTransition, args);
+        this.state = newRepresentation.underlyingState;
+      }
+      // Alert all listeners of state transition
+      await this._onTransitionedEvent.invoke(transition);
+    } else { // Alert all listeners of state transition
+      await this._onTransitionedEvent.invoke(transition);
+      await newRepresentation.enter(transition, args);
     }
   }
 
   /**
    * Override the default behaviour of throwing an exception when an unhandled trigger
-   * 
-   * @param {((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>)} unhandledTriggerAction >An action to call when an unhandled trigger is fired.
+   *
+   * @param {(((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>))} unhandledTriggerAction
+   * @returns {*}
    * @memberof StateMachine
    */
-  public onUnhandledTrigger(unhandledTriggerAction: (state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>): any {
+  public onUnhandledTrigger(unhandledTriggerAction: ((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>)): any {
     this._unhandledTriggerAction = new UnhandledTriggerAction<TState, TTrigger>(unhandledTriggerAction);
   }
 

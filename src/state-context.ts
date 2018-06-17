@@ -9,7 +9,7 @@ import { StateMachineInfo } from './reflection/state-machine-info';
  * @template TState The type used to represent the states.
  * @template TTrigger The type used to represent the triggers that cause state transitions.
  */
-export abstract class StateContext<TState, TTrigger> {
+export abstract class StateContext<TState, TTrigger, TContext = undefined> {
 
   /**
    * Provides an info object which exposes the states, transitions, and actions of this machine.
@@ -89,11 +89,16 @@ export abstract class StateContext<TState, TTrigger> {
 
   /**
    * Override the default behaviour of throwing an exception when an unhandled trigger
-   * 
-   * @param {((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>)} unhandledTriggerAction >An action to call when an unhandled trigger is fired.
-   * @memberof StateMachine
+   *
+   * @abstract
+   * @param {(((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>) |
+   *     ((context: TContext, state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>))} unhandledTriggerAction
+   * @returns {*}
+   * @memberof StateContext
    */
-  public abstract onUnhandledTrigger(unhandledTriggerAction: (state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>): any;
+  public abstract onUnhandledTrigger(unhandledTriggerAction:
+    ((state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>) |
+    ((context: TContext, state: TState, trigger: TTrigger, unmetGuards: string[]) => any | Promise<any>)): any;
 
   /**
    * Determine if the state machine is in the supplied state.

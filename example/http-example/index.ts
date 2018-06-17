@@ -1,4 +1,4 @@
-import { HttpRequest } from './http-request';
+import { HttpRequest } from './http-request-context';
 
 (async () => {
   const httpRequest = new HttpRequest('http://www.google.com');

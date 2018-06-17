@@ -27,6 +27,8 @@ _stateMachine.configure(forkState)
 _stateMachine.configure(endState)
   .onEntry(endState.onEntry.bind(endState));
 
+_stateMachine.onUnhandledTrigger((s, t, u) => { });
+
 (async () => {
   await _stateMachine.activate();
   await fire(Trigger.Fork);

@@ -6,6 +6,7 @@ import { Transition } from '../transition';
 import { InternalTriggerBehaviour } from '../internal-trigger-behaviour';
 import { DynamicTriggerBehaviour } from '../dynamic-trigger-behaviour';
 import { IgnoredTriggerBehaviour } from '../ignored-trigger-behaviour';
+import { ReentryTriggerBehaviour } from '../reentry-trigger-behaviour';
 import { InvocationInfo } from '../reflection/invocation-info';
 import { DynamicTransitionInfo } from '../reflection/dynamic-transition-info';
 import { DynamicStateInfos } from '../reflection/dynamic-state-infos';
@@ -140,7 +141,7 @@ export class StateConfiguration<TState, TTrigger, TContext> {
    * @memberof StateConfiguration
    */
   public permitReentry(trigger: TTrigger): StateConfiguration<TState, TTrigger, TContext> {
-    return this.internalPermit(trigger, this._representation.underlyingState);
+    return this.internalPermitReentryIf(trigger, this._representation.underlyingState, null);
   }
 
   /**
@@ -160,12 +161,12 @@ export class StateConfiguration<TState, TTrigger, TContext> {
     description: string | null = null)
     : StateConfiguration<TState, TTrigger, TContext> {
     if (guards instanceof Array) {
-      return this.internalPermitIf(
+      return this.internalPermitReentryIf(
         trigger,
         this._representation.underlyingState,
         new TransitionGuard(...guards));
     } else {
-      return this.internalPermitIf(
+      return this.internalPermitReentryIf(
         trigger,
         this._representation.underlyingState,
         new TransitionGuard({ guard: guards, description: description }));
@@ -414,6 +415,11 @@ export class StateConfiguration<TState, TTrigger, TContext> {
     return this;
   }
 
+  private internalPermitReentryIf(trigger: TTrigger, destinationState: TState, transitionGuard: TransitionGuard<TContext> | null): StateConfiguration<TState, TTrigger, TContext> {
+    this._representation.addTriggerBehaviour(new ReentryTriggerBehaviour<TState, TTrigger, TContext>(trigger, destinationState, transitionGuard));
+    return this;
+  }
+
   private internalPermitDynamicIf(
     trigger: TTrigger,
     destinationStateSelector: (context: TContext, args: any[]) => TState,
@@ -433,4 +439,22 @@ export class StateConfiguration<TState, TTrigger, TContext> {
     return this;
   }
 
+  /**
+   * Adds internal transition to this state. When entering the current state the state machine will look for an initial transition, and enter the target state.
+   *
+   * @param {TState} targetState The target initial state
+   * @returns {StateConfiguration<TState, TTrigger>} A stateConfiguration object
+   * @memberof StateConfiguration
+   */
+  public initialTransition(targetState: TState): StateConfiguration<TState, TTrigger, TContext> {
+    if (this._representation.hasInitialTransition) {
+      throw new Error(`This state has already been configured with an inital transition (${this._representation.initialTransitionTarget}).`);
+    }
+    if (targetState === this.state) {
+      throw new Error('Setting the current state as the target destination state is not allowed.');
+    }
+
+    this._representation.setInitialTransition(targetState);
+    return this;
+  }
 }

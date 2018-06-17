@@ -4,6 +4,7 @@ import { IgnoredTriggerBehaviour } from '../ignored-trigger-behaviour';
 import { InternalTriggerBehaviour } from '../internal-trigger-behaviour';
 import { TransitioningTriggerBehaviour } from '../transitioning-trigger-behaviour';
 import { DynamicTriggerBehaviour } from '../dynamic-trigger-behaviour';
+import { ReentryTriggerBehaviour } from '../reentry-trigger-behaviour';
 import { InvocationInfo } from './invocation-info';
 import { FixedTransitionInfo } from './fixed-transition-info';
 import { DynamicTransitionInfo } from './dynamic-transition-info';
@@ -94,6 +95,13 @@ export class StateInfo<TState> {
         if (!destinationInfo) { continue; }
         fixedTransitions.push(FixedTransitionInfo.create(item, destinationInfo));
       }
+
+      for (const item of triggerBehaviours['1'].filter(behaviour => (behaviour instanceof ReentryTriggerBehaviour))) {
+        const destinationInfo = lookupState((item as ReentryTriggerBehaviour<TState, TTrigger>).destination);
+        if (!destinationInfo) { continue; }
+        fixedTransitions.push(FixedTransitionInfo.create(item, destinationInfo));
+      }
+
       // Then add all the internal transitions
       for (const item of triggerBehaviours['1'].filter(behaviour => (behaviour instanceof InternalTriggerBehaviour))) {
         const destinationInfo = lookupState(stateRepresentation.underlyingState);

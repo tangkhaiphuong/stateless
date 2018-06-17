@@ -34,7 +34,17 @@ export class StateRepresentation<TState, TTrigger> {
 
   private readonly _substates: Array<StateRepresentation<TState, TTrigger>> = [];
 
-  constructor(private readonly _state: TState) {
+  public _hasInitialTransition: boolean = false;
+
+  constructor(private readonly _state: TState, private _initialTransitionTarget: TState = _state) {
+  }
+
+  public get hasInitialTransition(): boolean {
+    return this._hasInitialTransition;
+  }
+
+  public get initialTransitionTarget(): TState {
+    return this._initialTransitionTarget;
   }
 
   public getSubstates(): Array<StateRepresentation<TState, TTrigger>> {
@@ -208,9 +218,10 @@ export class StateRepresentation<TState, TTrigger> {
     }
 
     // Execute internal transition event handler
-    if (!!internalTransition) {
-      internalTransition.execute(transition, args);
+    if (!internalTransition) {
+      throw new Error('The configuration is incorrect, no action assigned to this internal transition.');
     }
+    internalTransition.execute(transition, args);
   }
 
   public async enter(transition: Transition<TState, TTrigger>, entryArgs: any[]): Promise<void> {
@@ -235,8 +246,16 @@ export class StateRepresentation<TState, TTrigger> {
       await this.executeExitActions(transition);
 
       if (!!this.superstate) {
-        transition = new Transition(this.superstate.underlyingState, transition.destination, transition.trigger);
-        return await this.superstate.exit(transition);
+        // Check if destination is within the state list
+        if (this.isIncludedIn(transition.destination)) {
+          // Destination state is within the list, exit first superstate only if it is NOT the the first
+          if (this.superstate.underlyingState !== transition.destination) {
+            return await this.superstate.exit(transition);
+          }
+        } else {
+          // Exit the superstate as well
+          return await this.superstate.exit(transition);
+        }
       }
     }
     return transition;
@@ -309,5 +328,10 @@ export class StateRepresentation<TState, TTrigger> {
       return result;
     };
     return implement();
+  }
+
+  public setInitialTransition(state: TState): void {
+    this._initialTransitionTarget = state;
+    this._hasInitialTransition = true;
   }
 }

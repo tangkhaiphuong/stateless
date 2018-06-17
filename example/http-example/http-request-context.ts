@@ -80,7 +80,7 @@ export class HttpRequest {
   private _statusCode?: number;
   private _payload?: string;
   private _authenication?: string;
-  private readonly _machine: StateContext<State, Trigger>;
+  private readonly _machine: StateContext<State, Trigger, HttpRequest>;
 
   constructor(private readonly _url: string) {
     this._machine = HttpRequest.Machine.createStateContext(this, {
