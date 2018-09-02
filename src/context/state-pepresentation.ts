@@ -1,13 +1,14 @@
-import { TriggerBehaviour } from '../trigger-behaviour';
-import { Transition } from '../transition';
-import { TriggerBehaviourResult } from '../trigger-behaviour-result';
+import { Context } from 'vm';
+
+import { ActivateActionBehaviour } from '../activate-action-behaviour';
+import { DeactivateActionBehaviour } from '../deactivate-action-behaviour';
 import { EntryActionBehaviour } from '../entry-action-behaviour';
 import { ExitActionBehaviour } from '../exit-action-behaviour';
-import { DeactivateActionBehaviour } from '../deactivate-action-behaviour';
-import { ActivateActionBehaviour } from '../activate-action-behaviour';
-import { InvocationInfo } from '../reflection/invocation-info';
 import { InternalTriggerBehaviour } from '../internal-trigger-behaviour';
-import { Context } from 'vm';
+import { InvocationInfo } from '../reflection/invocation-info';
+import { Transition } from '../transition';
+import { TriggerBehaviour } from '../trigger-behaviour';
+import { TriggerBehaviourResult } from '../trigger-behaviour-result';
 
 /**
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/StateRepresentation.cs
@@ -167,7 +168,7 @@ export class StateRepresentation<TState, TTrigger, TContext>  {
 
     for (const item of results) {
       if (!!actual) {
-        throw new Error(`Multiple permitted exit transitions are configured from state '${trigger}' for trigger '${this._state}'. Guard clauses must be mutually exclusive.`);
+        throw new Error(`Multiple permitted exit transitions are configured from state '${this._state}' for trigger '${trigger}'. Guard clauses must be mutually exclusive.`);
       }
       if (filter(item)) {
         actual = item;
