@@ -1,13 +1,12 @@
-import { TriggerBehaviour } from '../trigger-behaviour';
-import { Transition } from '../transition';
-import { TriggerBehaviourResult } from '../trigger-behaviour-result';
+import { ActivateActionBehaviour } from '../activate-action-behaviour';
+import { DeactivateActionBehaviour } from '../deactivate-action-behaviour';
 import { EntryActionBehaviour } from '../entry-action-behaviour';
 import { ExitActionBehaviour } from '../exit-action-behaviour';
-import { DeactivateActionBehaviour } from '../deactivate-action-behaviour';
-import { ActivateActionBehaviour } from '../activate-action-behaviour';
-import { InvocationInfo } from '../reflection/invocation-info';
 import { InternalTriggerBehaviour } from '../internal-trigger-behaviour';
-import { Context } from 'vm';
+import { InvocationInfo } from '../reflection/invocation-info';
+import { Transition } from '../transition';
+import { TriggerBehaviour } from '../trigger-behaviour';
+import { TriggerBehaviourResult } from '../trigger-behaviour-result';
 
 /**
  * @link https://github.com/dotnet-state-machine/stateless/blob/dev/src/Stateless/StateRepresentation.cs
@@ -167,7 +166,7 @@ export class StateRepresentation<TState, TTrigger, TContext>  {
 
     for (const item of results) {
       if (!!actual) {
-        throw new Error(`Multiple permitted exit transitions are configured from state '${trigger}' for trigger '${this._state}'. Guard clauses must be mutually exclusive.`);
+        throw new Error(`Multiple permitted exit transitions are configured from state '${this._state}' for trigger '${trigger}'. Guard clauses must be mutually exclusive.`);
       }
       if (filter(item)) {
         actual = item;
@@ -201,14 +200,14 @@ export class StateRepresentation<TState, TTrigger, TContext>  {
 
   public async internalAction(context: TContext, transition: Transition<TState, TTrigger>, args: any[]): Promise<void> {
 
-    let internalTransition: InternalTriggerBehaviour<TState, TTrigger, Context> | undefined;
+    let internalTransition: InternalTriggerBehaviour<TState, TTrigger, TContext> | undefined;
 
     // Look for actions in superstate(s) recursivly until we hit the topmost superstate, or we actually find some trigger handlers.
     let aStateRep: StateRepresentation<TState, TTrigger, TContext> | null = this;
     while (aStateRep !== null) {
       const [result, handler] = await aStateRep.tryFindLocalHandler(context, transition.trigger, args);
       if (result && handler) {
-        internalTransition = handler.handler as InternalTriggerBehaviour<TState, TTrigger, Context>;
+        internalTransition = handler.handler as InternalTriggerBehaviour<TState, TTrigger, TContext>;
         break;
       }
       // Try to look for trigger handlers in superstate (if it exists)
