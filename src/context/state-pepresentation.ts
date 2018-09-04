@@ -1,5 +1,3 @@
-import { Context } from 'vm';
-
 import { ActivateActionBehaviour } from '../activate-action-behaviour';
 import { DeactivateActionBehaviour } from '../deactivate-action-behaviour';
 import { EntryActionBehaviour } from '../entry-action-behaviour';
