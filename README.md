@@ -19,7 +19,7 @@ phoneCall.configure(State.Connected)
 
 // ...
 
-phoneCall.fire(Trigger.CallDialled);
+await phoneCall.fire(Trigger.CallDialled);
 assert.equal(State.Ringing, phoneCall.State);
 ```
 
@@ -75,8 +75,8 @@ PhoneCall.initialize();
 const phoneCall1 = stateMachine.createStateContext(new PhoneCall(), State.OffHook);
 const phoneCall2 = stateMachine.createStateContext(new PhoneCall(), State.OffHook);
 
-phoneCall1.fire(Trigger.CallDialled);
-phoneCall2.fire(Trigger.CallDialled);
+await phoneCall1.fire(Trigger.CallDialled);
+await phoneCall2.fire(Trigger.CallDialled);
 ```
 
 ### Hierarchical States
